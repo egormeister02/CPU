@@ -5,23 +5,21 @@ void CreateCPUtext(const TEXT* assm_text, TEXT* CPU_text)
 {    
     ASSERT(assm_text != NULL);
     ASSERT(CPU_text != NULL);
-    printf("OK\n");
-    printf("%llu\n", (assm_text->nlines + 1) * MAX_CPU_STR);
+
     CPU_text->buf = (char*)calloc((assm_text->nlines + 1) * MAX_CPU_STR, sizeof(char));
     ASSERT(CPU_text->buf != NULL);
-    printf("OK\n");
+
     CPU_text->nlines = assm_text->nlines + 1;
-    printf("OK\n");
+
     CPU_text->Lines = (LINE*)calloc(CPU_text->nlines, sizeof(LINE));
     ASSERT(CPU_text->Lines != NULL);
-    printf("OK\n");
+
     CPU_text->Lines[0].line = CPU_text->buf;
-    printf("OK\n");
 }
 
-int SizeVal(int val)
+size_t SizeVal(int val)
 {
-    int size_val = 0;
+    size_t size_val = 0;
     do
     {
         val /= 10;
@@ -35,27 +33,31 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
 {
     ASSERT(assm_text != NULL);
     ASSERT(CPU_text != NULL);
-    printf("OR\n");
     CreateCPUtext(assm_text, CPU_text);
-    printf("OR\n");
     int j = 0;
     for (int i = 0; i < (long)assm_text->nlines; i++)
     {   
-        //if ((long)assm_text->Lines[i].length < 2) continue;
-        puts(assm_text->Lines[i].line);
-        char cmd[MAX_SIZE_COMMAND] = "";
-        int val = 0;
-        int size_str = 0;
+        char   cmd[MAX_SIZE_COMMAND] =         "";
+        double val                   = POISON_VAL;
+        char   sval[MAX_LENGTH_VAL]  =         "";
+        size_t size_str              =          0;
+
         sscanf(assm_text->Lines[i].line, "%s", cmd);
-        //printf("OK\n");
+
         if (strcmp(cmd, "") == 0) continue;
-        else if (strcmp(cmd, "push") == 0)
+        else if (stricmp(cmd, "push") == 0)
         {
-            sscanf((char*)(assm_text->Lines[i].line + 4), "%d", &val);
+            sscanf((char*)(assm_text->Lines[i].line + 4), "%lf", &val);
+            if (val == POISON_VAL) 
+            {
+                printf("invalid number format\n"
+                        "line: %d", i+1);
+                abort();
+            }
+            sscanf((char*)(assm_text->Lines[i].line + 4), "%s", sval);
+            size_str = SizeVal(CMD_PUSH) + strlen(sval) + 2;
 
-            size_str = SizeVal(NAMBER_PUSH) + SizeVal(val) + 2;
-
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", NAMBER_PUSH, val);
+            sprintf(CPU_text->Lines[j].line, "%d %s\n", CMD_PUSH, sval);
 
             CPU_text->Lines[j].length = size_str;
             CPU_text->size += size_str;
@@ -63,11 +65,11 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
             j++;
         }
 
-        else if (strcmp(cmd, "add") == 0)
+        else if (stricmp(cmd, "add") == 0)
         {
-            size_str = SizeVal(NAMBER_PUSH) + SizeVal(val) + 2;
+            size_str = SizeVal(CMD_ADD) + SizeVal(NAN_VAL) + 2;
 
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", NAMBER_ADD, val);
+            sprintf(CPU_text->Lines[j].line, "%d %d\n", CMD_ADD, NAN_VAL);
 
             CPU_text->Lines[j].length = size_str;
             CPU_text->size += size_str;
@@ -75,11 +77,11 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
             j++;
         }
 
-        else if (strcmp(cmd, "out") == 0)
+        else if (stricmp(cmd, "out") == 0)
         {
-            size_str = SizeVal(NAMBER_PUSH) + SizeVal(val) + 2;
+            size_str = SizeVal(CMD_OUT) + SizeVal(NAN_VAL) + 2;
 
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", NAMBER_OUT, val);
+            sprintf(CPU_text->Lines[j].line, "%d %d\n", CMD_OUT, NAN_VAL);
 
             CPU_text->Lines[j].length = size_str;
             CPU_text->size += size_str;
@@ -87,11 +89,11 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
             j++;
         }
 
-        else if (strcmp(cmd, "hlt") == 0)
+        else if (stricmp(cmd, "hlt") == 0)
         {
-            size_str = SizeVal(NAMBER_PUSH) + SizeVal(val) + 2;
+            size_str = SizeVal(CMD_HLT) + SizeVal(NAN_VAL) + 2;
 
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", NAMBER_HLT, val);
+            sprintf(CPU_text->Lines[j].line, "%d %d\n", CMD_HLT, NAN_VAL);
 
             CPU_text->Lines[j].length = size_str;
             CPU_text->size += size_str;
@@ -101,10 +103,12 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
 
         else 
         {
-            printf("unknown command");
+            printf("unknown command\n"
+                   "line: %d", i+1);
             abort();
         }
     }
+    CPU_text->nlines = j + 1;
 }
 
 
@@ -113,7 +117,6 @@ void TextDumpFunc(const TEXT* text, FILE* LogFile)
     ASSERT(text != NULL);
 
     fprintf(LogFile, "\n----------------------------------TextDump----------------------------------\n");
-    printf("OK\n");
     fprintf(LogFile, "    data pointer = %p\n", text->buf);
     
         fprintf(LogFile, "    size         = %llu\n", text->size);
@@ -133,6 +136,7 @@ void TextDumpFunc(const TEXT* text, FILE* LogFile)
 
     fprintf(LogFile, "}\n");
     fprintf(LogFile, "\n---------------------------------------------------------------------------\n");
+    fprintf(LogFile, "\n------------------------------LinesLengthDump------------------------------\n");
     
     for (size_t index = 0; index < text->nlines; index++)
         {
