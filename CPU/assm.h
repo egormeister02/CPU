@@ -10,6 +10,8 @@ const int  MAX_CPU_STR     =             20;
 
 void CreateCPUtext(const TEXT*, TEXT*);
 
-void CreateSoftCPU(const TEXT*, TEXT*);
+void CreateCPUcode(const TEXT*, TEXT*);
 
 int SizeVal(int);
+
+void TextDumpFunc(const TEXT*, FILE*);

@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #include<string.h>
 
+#define WINDOWS 1
+
 #define ASSERT(condition)                                         \
 if (!(condition)){                                                \
     fprintf(stdout, "Error in %s:\n"                              \
@@ -13,16 +15,18 @@ if (!(condition)){                                                \
 
 struct TEXT {
     char* buf = NULL;
-    unsigned long size = 0;
-    unsigned int nlines = 0;
+    size_t size = 0;
+    size_t nlines = 0;
     struct LINE* Lines = NULL;
 };
 
 struct LINE
 {
     char* line = NULL;
-    unsigned int length = 0;
+    size_t length = 0;
 };
+
+const char STR_SEPAR = '\0';
 
 void CreateText(TEXT*, FILE*);
 
@@ -30,10 +34,10 @@ void CreateArrayLines(TEXT*);
 
 int RepAndCount(TEXT* , char, char);
 
-void cwapLine(LINE*, LINE*);
+void swapLine(LINE*, LINE*);
 
 void SortBubble(TEXT*);
 
-void MergeSort(LINE*, int);
+void MergeSort(LINE*, size_t);
 
 void WriteText(TEXT*, FILE*);
