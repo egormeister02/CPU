@@ -17,30 +17,33 @@ void CreateCPUtext(const TEXT* assm_text, TEXT* CPU_text)
     CPU_text->Lines[0].line = CPU_text->buf;
 }
 
-size_t SizeVal(int val)
-{
-    size_t size_val = 0;
-    do
-    {
-        val /= 10;
-        size_val++;
-    } while (abs(val) > 0);
-
-    return size_val;
-}
-
-void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
+void CodeCPUCtor(const TEXT* assm_text, CodeCPU* CPU_code)
 {
     ASSERT(assm_text != NULL);
-    ASSERT(CPU_text != NULL);
-    CreateCPUtext(assm_text, CPU_text);
-    int j = 0;
+    ASSERT(CPU_code != NULL);
+
+    CPU_code->signature = CPU_SIGNATURE;
+    CPU_code->version = CPU_VERSION;
+    CPU_code->nElem = assm_text->nlines * 2;
+    CPU_code->bin_buf = (void*)calloc(CPU_code->nElem, sizeof(size_t));
+
+    ASSERT(CPU_code->bin_buf != NULL);
+}
+
+void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
+{
+    ASSERT(assm_text != NULL);
+    ASSERT(CPU_code != NULL);
+
+    CodeCPUCtor(assm_text, CPU_code);
+
+    int index = 0;
     for (int i = 0; i < (long)assm_text->nlines; i++)
     {   
         char   cmd[MAX_SIZE_COMMAND] =         "";
         double val                   = POISON_VAL;
         char   sval[MAX_LENGTH_VAL]  =         "";
-        size_t size_str              =          0;
+        //size_t size_str              =          0;
 
         sscanf(assm_text->Lines[i].line, "%s", cmd);
 
@@ -54,51 +57,26 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
                         "line: %d", i+1);
                 abort();
             }
-            sscanf((char*)(assm_text->Lines[i].line + 4), "%s", sval);
-            size_str = SizeVal(CMD_PUSH) + strlen(sval) + 2;
-
-            sprintf(CPU_text->Lines[j].line, "%d %s\n", CMD_PUSH, sval);
-
-            CPU_text->Lines[j].length = size_str;
-            CPU_text->size += size_str;
-            CPU_text->Lines[j+1].line = (char*)(CPU_text->Lines[j].line + size_str);
-            j++;
+            *(size_t*)((size_t*)CPU_code->bin_buf + (index++)) = CMD_PUSH;
+            *(double*)((double*)CPU_code->bin_buf + (index++)) =      val;
         }
 
         else if (stricmp(cmd, "add") == 0)
         {
-            size_str = SizeVal(CMD_ADD) + SizeVal(NAN_VAL) + 2;
-
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", CMD_ADD, NAN_VAL);
-
-            CPU_text->Lines[j].length = size_str;
-            CPU_text->size += size_str;
-            CPU_text->Lines[j+1].line = (char*)(CPU_text->Lines[j].line + size_str);
-            j++;
+            *(size_t*)((size_t*)CPU_code->bin_buf + (index++)) =  CMD_ADD;
+            *(double*)((double*)CPU_code->bin_buf + (index++)) =  NAN_VAL;
         }
 
         else if (stricmp(cmd, "out") == 0)
         {
-            size_str = SizeVal(CMD_OUT) + SizeVal(NAN_VAL) + 2;
-
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", CMD_OUT, NAN_VAL);
-
-            CPU_text->Lines[j].length = size_str;
-            CPU_text->size += size_str;
-            CPU_text->Lines[j+1].line = (char*)(CPU_text->Lines[j].line + size_str);
-            j++;
+            *(size_t*)((size_t*)CPU_code->bin_buf + (index++)) =  CMD_OUT;
+            *(double*)((double*)CPU_code->bin_buf + (index++)) =  NAN_VAL;
         }
 
         else if (stricmp(cmd, "hlt") == 0)
         {
-            size_str = SizeVal(CMD_HLT) + SizeVal(NAN_VAL) + 2;
-
-            sprintf(CPU_text->Lines[j].line, "%d %d\n", CMD_HLT, NAN_VAL);
-
-            CPU_text->Lines[j].length = size_str;
-            CPU_text->size += size_str;
-            CPU_text->Lines[j+1].line = (char*)(CPU_text->Lines[j].line + size_str);
-            j++;
+            *(size_t*)((size_t*)CPU_code->bin_buf + (index++)) =  CMD_HLT;
+            *(double*)((double*)CPU_code->bin_buf + (index++)) =  NAN_VAL;
         }
 
         else 
@@ -108,10 +86,28 @@ void CreateCPUcode(const TEXT* assm_text, TEXT* CPU_text)
             abort();
         }
     }
-    CPU_text->nlines = j + 1;
+    CPU_code->nElem = index;
+}
+/*
+void CreateCodeFile(const TEXT* CPU_text, FILE* codefile)
+{
+    size_t size = 0;
+    size = 
 }
 
 
+size_t SizeVal(int val)
+{
+    size_t size_val = 0;
+    do
+    {
+        val /= 10;
+        size_val++;
+    } while (abs(val) > 0);
+
+    return size_val;
+}
+*/
 void TextDumpFunc(const TEXT* text, FILE* LogFile)
 {   
     ASSERT(text != NULL);

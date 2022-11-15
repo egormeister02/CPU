@@ -3,23 +3,31 @@
 
 int main()
 {
-    TEXT assm_text = {};
-    TEXT CPU_text  = {};
+    struct TEXT    assm_text = {};
+    struct CodeCPU CPU_code  = {};
 
 
     FILE* source = fopen(ASSM_FILE, "r");
-    FILE* codefile = fopen(SOFT_CPU_FILE, "w");
+    FILE* codefile = fopen(SOFT_CPU_FILE, "w+");
     FILE* LogFile = fopen("logText.txt", "w");
     CreateText(&assm_text, source);
     TextDumpFunc(&assm_text, LogFile);
 
-    CreateCPUcode(&assm_text, &CPU_text);
+    CreateCPUbuf(&assm_text, &CPU_code);
 
-    TextDumpFunc(&CPU_text, LogFile);
-    fwrite(CPU_text.buf, CPU_text.size, 1, codefile);
+    //TextDumpFunc(&CPU_text, LogFile);
+    fwrite(CPU_code.bin_buf, CPU_code.nElem, sizeof(size_t), codefile);
 
     printf("OK\n");
-
+    /*
+    fseek(codefile, 0, SEEK_SET);
+    void* buf = (void*)calloc(20, sizeof(size_t));
+    fread(buf, sizeof(size_t), 8, codefile);
+    for (int i = 0; i < 8; i+=2)
+    {
+        printf("%llu %lf\n", *(size_t*)((size_t*)buf + i), *(double*)((double*)buf + (i+1)));
+    }
+    */
     fclose(LogFile);
     fclose(source);
     fclose(codefile);
