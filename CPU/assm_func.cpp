@@ -42,16 +42,16 @@ void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
     {   
         char   cmd[MAX_SIZE_COMMAND] =         "";
         double val                   = POISON_VAL;
-        char   sval[MAX_LENGTH_VAL]  =         "";
+        //char   sval[MAX_LENGTH_VAL]  =         "";
         //size_t size_str              =          0;
+        int nch = 0;
 
-        sscanf(assm_text->Lines[i].line, "%s", cmd);
+        sscanf(assm_text->Lines[i].line, " %s %n", cmd, &nch);
 
-        if (strcmp(cmd, "") == 0) continue;
-        else if (stricmp(cmd, "push") == 0)
+        if (stricmp(cmd, "push") == 0)
         {
-            sscanf((char*)(assm_text->Lines[i].line + 4), "%lf", &val);
-            if (val == POISON_VAL) 
+            sscanf((char*)(assm_text->Lines[i].line + nch), "%lf", &val);
+            if ((long)val == POISON_VAL) 
             {
                 printf("invalid number format\n"
                         "line: %d", i+1);
@@ -108,40 +108,3 @@ size_t SizeVal(int val)
     return size_val;
 }
 */
-void TextDumpFunc(const TEXT* text, FILE* LogFile)
-{   
-    ASSERT(text != NULL);
-
-    fprintf(LogFile, "\n----------------------------------TextDump----------------------------------\n");
-    fprintf(LogFile, "    data pointer = %p\n", text->buf);
-    
-        fprintf(LogFile, "    size         = %llu\n", text->size);
-        fprintf(LogFile, "    nlines     = %llu\n", text->nlines);
-
-        fprintf(LogFile, "    {\n");
-        for (size_t index = 0; index < text->size; index++)
-        {
-            fprintf(LogFile, "\t");
-            fprintf(LogFile, "[%llu] = ", index);
-            
-            fprintf(LogFile, "%c ", text->buf[index]);
-
-            fprintf(LogFile, "\n");
-        }
-        fprintf(LogFile, "    }\n");
-
-    fprintf(LogFile, "}\n");
-    fprintf(LogFile, "\n---------------------------------------------------------------------------\n");
-    fprintf(LogFile, "\n------------------------------LinesLengthDump------------------------------\n");
-    
-    for (size_t index = 0; index < text->nlines; index++)
-        {
-            fprintf(LogFile, "\t");
-            fprintf(LogFile, "[%llu] = ", index);
-            
-            fprintf(LogFile, "%llu ", text->Lines[index].length);
-
-            fprintf(LogFile, "\n");
-        }
-        fprintf(LogFile, "    }\n");
-}

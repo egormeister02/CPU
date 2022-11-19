@@ -2,7 +2,8 @@
 #include<stdlib.h>
 #include<string.h>
 
-#define WINDOWS 1
+#define SKIP_EMPTY_STR 1
+const char STR_SEPAR = '\n';
 
 #define ASSERT(condition)                                         \
 if (!(condition)){                                                \
@@ -26,7 +27,13 @@ struct LINE
     size_t length = 0;
 };
 
-const char STR_SEPAR = '\0';
+enum mode
+{
+    LEFT = 0,
+    RIGHT = 1
+};
+
+
 
 void CreateText(TEXT*, FILE*);
 
@@ -38,6 +45,16 @@ void swapLine(LINE*, LINE*);
 
 void SortBubble(TEXT*);
 
-void MergeSort(LINE*, size_t);
+void MergeSort(LINE*, size_t, const mode);
+
+void TextDumpFunc(const TEXT*, FILE*);
 
 void WriteText(TEXT*, FILE*);
+
+int Mystrcmp(const LINE*, const LINE*, const mode);
+
+int IsLetter(const char);
+
+char lowercase(const char);
+
+int IsEmpty(const LINE*);
