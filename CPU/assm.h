@@ -2,11 +2,17 @@
 #include "config_cmd.h"
 #include <math.h>
 
+#define CMD_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 7)
+#define ARG_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 0)
+#define MEM_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 1)
+#define REG_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 2)
+#define VAL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 8)
+
 struct CodeCPU
 {
     int     signature  =    0;
     int     version    =    0;
-    size_t  nElem      =    0;
+    size_t  nCmd      =    0;
     void*   bin_buf    = NULL;
 };
 
@@ -31,3 +37,8 @@ void CreateCPUcode(const TEXT*, TEXT*);
 size_t SizeVal(int);
 
 void CreateCodeFile(const TEXT*, FILE*);
+
+char* IsMem(char*);
+
+size_t IsReg(const char*);
+

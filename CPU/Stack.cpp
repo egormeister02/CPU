@@ -1,4 +1,3 @@
-#include <conio.h>
 #include "Stack.h"
 
 void StackCtor(stk* stk, size_t capacity)
@@ -89,7 +88,7 @@ StackCodeError StackCheckFunc(const stk* st,const char name[MAX_SIZE_STR], const
             name, file, line, func);  
     StackDumpFunc(st, name, file, line, func, STACK_NULL);
     FinishLog();
-    return STACK_NULL;
+    abort();
     }
     else if ((st->data == (Elem_t*)DESTRUCT_DATA) || (st->size == DESTRUCT_SIZE) || (st->capacity == DESTRUCT_CAPACITY))
     {                                           
@@ -101,7 +100,7 @@ StackCodeError StackCheckFunc(const stk* st,const char name[MAX_SIZE_STR], const
             name, file, line, func);  
     StackDumpFunc(st, name, file, line, func, STACK_DESTRUCT);
     FinishLog();
-    return STACK_DESTRUCT;
+    abort();
     }
     else if (st->data == NULL)
     {                                           
@@ -113,7 +112,7 @@ StackCodeError StackCheckFunc(const stk* st,const char name[MAX_SIZE_STR], const
             name, file, line, func);  
     StackDumpFunc(st, name, file, line, func, STACK_DATA_NULL);
     FinishLog();
-    return STACK_DATA_NULL;
+    abort();
     }
     else if ((long)st->size < 0)
     {                                           
@@ -125,7 +124,7 @@ StackCodeError StackCheckFunc(const stk* st,const char name[MAX_SIZE_STR], const
             name, file, line, func);  
     StackDumpFunc(st, name, file, line, func, STACK_SIZE_LESS_0);
     FinishLog();
-    return STACK_SIZE_LESS_0;
+    abort();
     }
     else if ((long)st->size >= (long)st->capacity)
     {                                           
@@ -137,7 +136,7 @@ StackCodeError StackCheckFunc(const stk* st,const char name[MAX_SIZE_STR], const
             name, file, line, func);  
     StackDumpFunc(st, name, file, line, func, STACK_SIZE_MORE_CAPACITY);
     FinishLog();
-    return STACK_SIZE_MORE_CAPACITY;
+    abort();
     }
     return STACK_OK;
 }
@@ -164,11 +163,11 @@ void StackDumpFunc(const stk* stk, const char StackName[MAX_SIZE_STR], const cha
     if (err == STACK_NULL)
     {
         fprintf(LogFile, "pointer of %s is NULL\n", StackName);
-        fprintf(LogFile, "Called at %s at %s(%llu)\n", file, func, line);
+        fprintf(LogFile, "Called at %s at %s(%u)\n", file, func, line);
         return;
     }
 
-    fprintf(LogFile, "Called at %s at %s(%llu)\n", file, func, line);
+    fprintf(LogFile, "Called at %s at %s(%u)\n", file, func, line);
     
     PrintError(err);
     
@@ -178,14 +177,14 @@ void StackDumpFunc(const stk* stk, const char StackName[MAX_SIZE_STR], const cha
     
     if ((err == STACK_DATA_NULL) || (err == STACK_DESTRUCT))
     {        
-        fprintf(LogFile, "    size         = %llu\n", stk->size);
-        fprintf(LogFile, "    capacity     = %llu\n", stk->capacity);
+        fprintf(LogFile, "    size         = %lx\n", stk->size);
+        fprintf(LogFile, "    capacity     = %lx\n", stk->capacity);
 
     }
     else
     {
-        fprintf(LogFile, "    size         = %llu\n", stk->size);
-        fprintf(LogFile, "    capacity     = %llu\n", stk->capacity);
+        fprintf(LogFile, "    size         = %lu\n", stk->size);
+        fprintf(LogFile, "    capacity     = %lu\n", stk->capacity);
 
         fprintf(LogFile, "    {\n");
         char* comment;
@@ -193,7 +192,7 @@ void StackDumpFunc(const stk* stk, const char StackName[MAX_SIZE_STR], const cha
         {
             fprintf(LogFile, "\t");
             fprintf(LogFile, (index < stk->size) ? "*" : " ");
-            fprintf(LogFile, "[%llu] = ", index);
+            fprintf(LogFile, "[%lu] = ", index);
             comment = (char*)(stk->data[index] == POISON ? "(POISON)": "");
             fprintf(LogFile, "%d %s", stk->data[index], comment);
 

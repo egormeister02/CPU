@@ -1,6 +1,4 @@
- Push 56  
-  push   43  
-
-add  
-  
+push 1
+push 1
+add
 hlt

@@ -3,6 +3,7 @@
 
 int main()
 {
+    
     struct TEXT    assm_text = {};
     struct CodeCPU CPU_code  = {};
 
@@ -16,7 +17,7 @@ int main()
     CreateCPUbuf(&assm_text, &CPU_code);
 
     //TextDumpFunc(&CPU_text, LogFile);
-    fwrite(CPU_code.bin_buf, CPU_code.nElem, sizeof(size_t), codefile);
+    fwrite(CPU_code.bin_buf, CPU_code.nCmd * 2, sizeof(size_t), codefile);
 
     printf("OK\n");
     
@@ -25,7 +26,7 @@ int main()
     fread(buf, sizeof(size_t), 8, codefile);
     for (int i = 0; i < 8; i+=2)
     {
-        printf("%llu %lf\n", *(size_t*)((size_t*)buf + i), *(double*)((double*)buf + (i+1)));
+        printf(" %lf\n", *(double*)((double*)buf + (i+1)));
     }
     
     fclose(LogFile);
@@ -33,5 +34,17 @@ int main()
     fclose(codefile);
     free(assm_text.buf);
     free(assm_text.Lines);
+    /*
+    char*  sval = NULL;
+    char* sval1 = NULL;
+
+        sval = (char*)calloc(MAX_LENGTH_VAL, sizeof(char));
+        ASSERT(sval != NULL);
+
+    scanf("%s", sval);
+    sval1 = IsMem(sval);
+
+    printf("%s", sval1);
+*/
     return 0;
 }

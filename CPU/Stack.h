@@ -1,6 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*
+#define ASSERT(condition)                                   \
+if (!(condition)){                                           \
+    fprintf(stderr, "Error in %s:\n"                          \
+                    "FILE: %s\n"                               \
+                    "LINE: %d\n"                                \
+                    "FUNCTION: %s\n",                            \
+           #condition, __FILE__, __LINE__, __PRETTY_FUNCTION__);  \
+    abort();}*/
+
 #define StackCheck(Stack) \
     StackCheckFunc(Stack, #Stack, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 
@@ -44,7 +54,7 @@ const size_t BASE_CAPACITY = 10;
 const int POISON_INT = 0x7DED;
 const char POISON_CHAR = 127;
 const long POISON_LONG = 0x7ADEADA7;
-const float POISON_FLOAT = 0xFDEADF;
+const float POISON_FLOAT = 0xFFDEADFF;
 const double POISON_DOUBLE = 0xFFDEADFF;
 const int MAX_SIZE_STR = 40;
 
