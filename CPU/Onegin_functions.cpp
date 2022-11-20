@@ -19,6 +19,18 @@ void CreateText(TEXT* text, FILE* file)
     CreateArrayLines(text);
 }
 
+void DtorText(TEXT* text)
+{
+    ASSERT(text != NULL);
+    free(text->buf);
+    text->buf = NULL;
+    text->nlines = 0;
+    text->size = 0;
+    free(text->Lines);
+    text->Lines = NULL;
+    
+}
+
 void CreateArrayLines(TEXT* text) 
 {
     ASSERT(text != NULL);

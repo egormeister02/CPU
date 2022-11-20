@@ -1,5 +1,5 @@
 
-const size_t CMD_PUSH = 1;
-const size_t CMD_ADD  = 2;
-const size_t CMD_OUT  = 3;
-const size_t CMD_HLT  = 4;
+const unsigned char CMD_PUSH = 1;
+const unsigned char CMD_ADD  = 2;
+const unsigned char CMD_OUT  = 3;
+const unsigned char CMD_HLT  = 4;

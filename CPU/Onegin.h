@@ -37,6 +37,8 @@ enum mode
 
 void CreateText(TEXT*, FILE*);
 
+void DtorText(TEXT*);
+
 void CreateArrayLines(TEXT*);
 
 int RepAndCount(TEXT* , char, char);
