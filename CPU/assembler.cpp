@@ -1,5 +1,5 @@
 #include<conio.h>
-#include "assm.h"
+#include "asm.h"
 
 int main()
 {
@@ -9,12 +9,14 @@ int main()
 
     FILE* source = fopen(ASSM_FILE, "r");
     FILE* codefile = fopen(SOFT_CPU_FILE, "w+b");
+    ASSERT(source != NULL);
+    ASSERT(codefile != NULL);
 
     CreateText(&assm_text, source);
 
     CreateCPUbuf(&assm_text, &CPU_code);
 
-    fwrite(CPU_code.bin_buf, CPU_code.nCmd * 2, sizeof(size_t), codefile);
+    WriteCodeFile(&CPU_code, codefile);
 
     printf("OK\n");
     
