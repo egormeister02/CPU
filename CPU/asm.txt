@@ -1,13 +1,10 @@
-push 1
-push 2
-push 4
-add
-add
-push 35
-div
-push 10
-mul
-in
-sub
-out
+push 5
+push [1]
+push RCX
+push [RDX]
+pop
+pop [1]
+pop [RFX]
+pop REX
+pop
 hlt

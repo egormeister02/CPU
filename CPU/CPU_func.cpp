@@ -36,36 +36,47 @@ void CreateCPU(CodeCPU* CPU_code, FILE* codefile)
     CPU_code->bin_buf = (void*)calloc(CPU_code->nCmd * 2, sizeof(size_t));
     ASSERT(CPU_code->bin_buf != NULL);
 
+    CPU_code->ram = (double*)calloc(SIZE_RAM, sizeof(double));
+    ASSERT(CPU_code->ram != NULL)
+
+    stk stk1 = {};
+    StackCtor(&stk1, 0);
+    CPU_code->stk = &stk1;
+
     fread(CPU_code->bin_buf, sizeof(size_t), CPU_code->nCmd * 2, codefile);
+}
+
+void DtorCPU(CodeCPU* CPU_code)
+{
+    ASSERT(CPU_code != NULL);
+
+    StackDtor(CPU_code->stk);
+    free(CPU_code->bin_buf);
+    free(CPU_code->ram);
 }
 
 void DoProgram(CodeCPU* CPU_code)
 {
     ASSERT(CPU_code != NULL);
-    struct stk stk1 = {};
-    size_t ip = 0;
     size_t cmd = 0;
 
-    StackCtor(&stk1, 0);
-
-    void(**command)(stk*, void*);
+    void(**command)(CodeCPU*);
     command = CreateArrayCmd(MAX_CODE_CMD);
 
-    while (ip < CPU_code->nCmd)
+    while (CPU_code->ip < CPU_code->nCmd)
     {
-        cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, ip));
-        command[cmd](&stk1, ARG_BYIT(CPU_code->bin_buf, ip));
+        cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, CPU_code->ip));
+        command[cmd](CPU_code);
         //StackDump(&stk1);
-        ip++;
     }
-    StackDtor(&stk1);
+    DtorCPU(CPU_code);
     free(command);
 }
 
-void(**CreateArrayCmd(size_t number_cmd))(stk*, void*) 
+void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*) 
 {
-    void(**CMD)(stk*, void*);
-    CMD = (void(**)(stk*, void*))calloc(number_cmd, sizeof(void(*)));
+    void(**CMD)(CodeCPU*);
+    CMD = (void(**)(CodeCPU*))calloc(number_cmd, sizeof(void(*)));
 
     CMD[CMD_PUSH] = Push_CMD;
     CMD[CMD_ADD] = Add_CMD;
@@ -79,50 +90,59 @@ void(**CreateArrayCmd(size_t number_cmd))(stk*, void*)
     return CMD;
 }
 
-void Push_CMD(stk* stk, void* buf)
+void Push_CMD(CodeCPU* CPU_code)
 {
-    Push(stk, *(double*)VAL_BYIT(buf, 0));
+    Push(CPU_code->stk, *(double*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    CPU_code->ip++;
 }
 
-void Add_CMD(stk* stk, void* buf)
+void Add_CMD(CodeCPU* CPU_code)
 {
-    Push(stk, Pop(stk) + Pop(stk));
+    Push(CPU_code->stk, Pop(CPU_code->stk) + Pop(CPU_code->stk));
+    CPU_code->ip++;
 }
 
-void Sub_CMD(stk* stk, void* buf)
+void Sub_CMD(CodeCPU* CPU_code)
 {
-    Push(stk, Pop(stk) - Pop(stk));
+    Push(CPU_code->stk, Pop(CPU_code->stk) - Pop(CPU_code->stk));
+    CPU_code->ip++;
 }
 
-void Mul_CMD(stk* stk, void* buf)
+void Mul_CMD(CodeCPU* CPU_code)
 {
-    Push(stk, Pop(stk) * Pop(stk));
+    Push(CPU_code->stk, Pop(CPU_code->stk) * Pop(CPU_code->stk));
+    CPU_code->ip++;
 }
 
-void Div_CMD(stk* stk, void* buf)
+void Div_CMD(CodeCPU* CPU_code)
 {
-    Push(stk, Pop(stk) / Pop(stk));
+    Push(CPU_code->stk, Pop(CPU_code->stk) / Pop(CPU_code->stk));
+    CPU_code->ip++;
 }
 
-void Pop_CMD(stk* stk, void* buf)
+void Pop_CMD(CodeCPU* CPU_code)
 {
-    Pop(stk);
+    Pop(CPU_code->stk);
+    CPU_code->ip++;
 }
 
-void In_CMD(stk* stk, void* buf)
+void In_CMD(CodeCPU* CPU_code)
 {
     double x = 0;
     printf("enter the number\n");
     scanf("%lf", &x);
-    Push(stk, x);
+    Push(CPU_code->stk, x);
+    CPU_code->ip++;
 }
 
-void Out_CMD(stk* stk, void* buf)
+void Out_CMD(CodeCPU* CPU_code)
 {
-    printf("%lf\n", Pop(stk));
+    printf("%lf\n", Pop(CPU_code->stk));
+    CPU_code->ip++;
 }
 
-void Hlt_CMD(stk* stk, void* buf)
+void Hlt_CMD(CodeCPU* CPU_code)
 {
     printf("end of process");
+    CPU_code->ip = CPU_code->nCmd;
 }

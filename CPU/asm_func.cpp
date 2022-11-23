@@ -36,22 +36,25 @@ void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
     ASSERT(CPU_code != NULL);
 
     CodeCPUCtor(assm_text, CPU_code);
-    char*  svalbuf = NULL;
-    char*  sval = NULL;
-
-    svalbuf = (char*)calloc(MAX_LENGTH_VAL, sizeof(char));
-    ASSERT(svalbuf != NULL);
+    
 
     int count_cmd = 0;
     for (int i = 0; i < (long)assm_text->nlines; i++)
     {   
         char   cmd[MAX_SIZE_COMMAND] =         {};
         double val                   = POISON_VAL;
+        size_t dval = POISON_VAL;
         int nch = 0;
+        char*  svalbuf = NULL;
+        char*  sval = NULL;
 
+        svalbuf = (char*)calloc(MAX_LENGTH_VAL, sizeof(char));
+        ASSERT(svalbuf != NULL);
+        
         sval = svalbuf;
 
         sscanf(assm_text->Lines[i].line, " %s %n", cmd, &nch);
+        //printf("%s\n", cmd);
         if (stricmp(cmd, "push") == 0)
         {
             *CMD_BYIT(CPU_code->bin_buf, count_cmd) = CMD_PUSH;
@@ -60,8 +63,28 @@ void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
 
             if (sval != IsMem(sval))
             {
-                sval += 1;
+                sval += 1;              
                 *MEM_BYIT(CPU_code->bin_buf, count_cmd) = 1;
+                if (IsReg(sval))
+                {
+                    *REG_BYIT(CPU_code->bin_buf, count_cmd) = 1; 
+                    *(size_t*)(VAL_BYIT(CPU_code->bin_buf, count_cmd)) = IsReg(sval) - 1;
+                    count_cmd ++;
+                    continue;
+                }
+                else 
+                {
+                    sscanf(sval, "%llu", &dval);
+                    if ((long)dval == POISON_VAL) 
+                    {
+                        printf("invalid number format\n"
+                                "line: %d", i+1);
+                        abort();
+                    }
+                    *((size_t*)VAL_BYIT(CPU_code->bin_buf, count_cmd)) = dval;
+                    count_cmd ++;
+                    continue;
+                }
             }           
             if (IsReg(sval))
             {
@@ -79,7 +102,48 @@ void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
                 }
                 *((double*)VAL_BYIT(CPU_code->bin_buf, count_cmd)) = val;
             }
+            count_cmd ++;
+        }
 
+        else if (stricmp(cmd, "pop") == 0)
+        {
+            *CMD_BYIT(CPU_code->bin_buf, count_cmd) = CMD_POP;
+            sscanf((char*)(assm_text->Lines[i].line + nch), " %s", sval);
+           
+            if (sval != IsMem(sval))
+            {
+                sval += 1;
+                *ARG_BYIT(CPU_code->bin_buf, count_cmd) = 1;               
+                *MEM_BYIT(CPU_code->bin_buf, count_cmd) = 1;
+                if (IsReg(sval))
+                {
+                    *REG_BYIT(CPU_code->bin_buf, count_cmd) = 1; 
+                    *(size_t*)(VAL_BYIT(CPU_code->bin_buf, count_cmd)) = IsReg(sval) - 1;
+                    count_cmd ++;
+                    continue;
+                }
+                else 
+                {
+                    sscanf(sval, "%llu", &dval);
+                    if ((long)dval == POISON_VAL) 
+                    {
+                        printf("invalid number format\n"
+                                "line: %d", i+1);
+                        abort();
+                    }
+                    *((size_t*)VAL_BYIT(CPU_code->bin_buf, count_cmd)) = dval;
+                    count_cmd ++;
+                    continue;
+                }
+            }           
+            if (IsReg(sval))
+            {
+                *ARG_BYIT(CPU_code->bin_buf, count_cmd) = 1; 
+                *REG_BYIT(CPU_code->bin_buf, count_cmd) = 1; 
+                *(size_t*)(VAL_BYIT(CPU_code->bin_buf, count_cmd)) = IsReg(sval) - 1;
+                count_cmd ++;
+                continue;
+            }
             count_cmd ++;
         }
 
@@ -113,12 +177,6 @@ void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
             count_cmd ++;
         }
 
-        else if (stricmp(cmd, "pop") == 0)
-        {
-            *CMD_BYIT(CPU_code->bin_buf, count_cmd) = CMD_POP;
-            count_cmd ++;
-        }
-
         else if (stricmp(cmd, "out") == 0)
         {
             *CMD_BYIT(CPU_code->bin_buf, count_cmd) = CMD_OUT;
@@ -136,13 +194,17 @@ void CreateCPUbuf(const TEXT* assm_text, CodeCPU* CPU_code)
                    "line: %d", i+1);
             abort();
         }
+        free(svalbuf);
     }
     CPU_code->nCmd = count_cmd;
-    free(svalbuf);
+    
 }
 
 void WriteCodeFile(const CodeCPU* CPU_code, FILE* file)
 {
+    ASSERT(CPU_code != NULL);
+    ASSERT(file != NULL);
+
     void* head_buf = (void*)calloc(2, sizeof(size_t));
     *(int*)head_buf = CPU_code->signature;
     *(int*)((int*)head_buf + 1) = CPU_code->version;
@@ -154,6 +216,8 @@ void WriteCodeFile(const CodeCPU* CPU_code, FILE* file)
 
 char* IsMem(char* sval)
 {
+    ASSERT(sval != NULL);
+    
     if ((sval[0] == '[') && (sval[strlen(sval) - 1] == ']'))
     {
         sval[strlen(sval) - 1] = 0;

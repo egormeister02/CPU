@@ -3,7 +3,7 @@
 #include<string.h>
 
 #define SKIP_EMPTY_STR 1
-const char STR_SEPAR = '\n';
+const char STR_SEPAR = '\0';
 
 #define ASSERT(condition)                                         \
 if (!(condition)){                                                \
