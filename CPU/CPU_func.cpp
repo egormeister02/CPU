@@ -92,7 +92,25 @@ void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*)
 
 void Push_CMD(CodeCPU* CPU_code)
 {
-    Push(CPU_code->stk, *(double*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    size_t id;
+    double val = 0;
+    if (*MEM_BYIT(CPU_code->bin_buf, CPU_code->ip))
+    {
+        if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+            id = (size_t)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+
+        else
+            id = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
+
+        val = CPU_code->ram[id];
+    }
+    else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+        val = (double)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+    
+    else
+        val = *(double*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
+
+    Push(CPU_code->stk, val);
     CPU_code->ip++;
 }
 
@@ -122,7 +140,25 @@ void Div_CMD(CodeCPU* CPU_code)
 
 void Pop_CMD(CodeCPU* CPU_code)
 {
-    Pop(CPU_code->stk);
+    size_t id;
+    double val = 0;
+    if (*ARG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+    {
+        if (*MEM_BYIT(CPU_code->bin_buf, CPU_code->ip))
+        {
+            if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+                id = (size_t)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+
+            else
+                id = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
+
+            CPU_code->ram[id] = Pop(CPU_code->stk);
+        }
+        else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+            CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)] = Pop(CPU_code->stk);
+    }
+    else 
+        Pop(CPU_code->stk);
     CPU_code->ip++;
 }
 
