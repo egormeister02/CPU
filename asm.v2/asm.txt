@@ -1,0 +1,9 @@
+push 10
+push 20
+add
+pop [0]
+push 5.76
+push 87
+sub
+out
+hlt
