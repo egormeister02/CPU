@@ -1,19 +1,15 @@
-push 10
-push 20
-push 10
-push 20
-push 10
-push 20
-push 10
-push 20
-push 10
-push 20
-push 10
-push 20
-push 10
-push 20
-push 10
-push 20
+push 25
+pop [0]
+push 1
+pop [1]
+1:
+push 1
+push [1]
 add
+pop [1]
+push [1]
+push [0]
+jae :1
+push [1]
 out
 hlt

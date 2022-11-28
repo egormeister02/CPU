@@ -8,3 +8,11 @@ const unsigned char CMD_IN   = 6;
 const unsigned char CMD_POP  = 7;
 const unsigned char CMD_OUT  = 8;
 const unsigned char CMD_HLT  = 9;
+const unsigned char CMD_JMP  = 10;
+const unsigned char CMD_JB   = 11;
+const unsigned char CMD_JA   = 12;
+const unsigned char CMD_JBE  = 13;
+const unsigned char CMD_JAE  = 14;
+const unsigned char CMD_JEE  = 15;
+const unsigned char CMD_JNE  = 16;
+ 

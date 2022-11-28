@@ -62,21 +62,22 @@ void DtorCPU(CodeCPU* CPU_code)
 void DoProgram(CodeCPU* CPU_code)
 {
     ASSERT(CPU_code != NULL);
+
     size_t cmd = 0;
-    stk stk1 ={};
+
+    stk stk1      =    {};
     StackCtor(&stk1, 0);
     CPU_code->stk = &stk1;
+
     void(**command)(CodeCPU*);
     command = CreateArrayCmd(MAX_CODE_CMD);
 
     while (CPU_code->ip < CPU_code->nCmd)
     {
-        ASSERT(CPU_code->stk != NULL);
-        //printf("%llu\n", CPU_code->ip);
         cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, CPU_code->ip));
         command[cmd](CPU_code);
-        StackDump(CPU_code->stk);
     }
+    
     DtorCPU(CPU_code);
     free(command);
 }
@@ -92,9 +93,16 @@ void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*)
     CMD[CMD_SUB] = Sub_CMD;
     CMD[CMD_MUL] = Mul_CMD;
     CMD[CMD_DIV] = Div_CMD;
-    CMD[CMD_IN]  = In_CMD;
+    CMD[CMD_IN]  =  In_CMD;
     CMD[CMD_POP] = Pop_CMD;
     CMD[CMD_HLT] = Hlt_CMD;
+    CMD[CMD_JMP] = Jmp_CMD;
+    CMD[CMD_JB]  =  Jb_CMD;
+    CMD[CMD_JA]  =  Ja_CMD;
+    CMD[CMD_JBE] = Jbe_CMD;
+    CMD[CMD_JAE] = Jae_CMD;
+    CMD[CMD_JEE] = Jee_CMD;
+    CMD[CMD_JNE] = Jne_CMD;
     return CMD;
 }
 
@@ -176,4 +184,57 @@ void Hlt_CMD(CodeCPU* CPU_code)
 {
     printf("end of process");
     CPU_code->ip = CPU_code->nCmd;
+}
+
+void Jmp_CMD(CodeCPU* CPU_code)
+{
+    CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+}
+
+void Jb_CMD(CodeCPU* CPU_code)
+{
+    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) < EPSILA)
+        CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    else
+        CPU_code->ip++;
+}
+
+void Ja_CMD(CodeCPU* CPU_code)
+{
+    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) > EPSILA)
+        CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    else
+        CPU_code->ip++;
+}
+
+void Jbe_CMD(CodeCPU* CPU_code)
+{
+    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) < EPSILA)
+        CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    else
+        CPU_code->ip++;
+}
+
+void Jae_CMD(CodeCPU* CPU_code)
+{
+    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) > -EPSILA)
+        CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    else
+        CPU_code->ip++;
+}
+
+void Jee_CMD(CodeCPU* CPU_code)
+{
+    if (abs(Pop(CPU_code->stk) - Pop(CPU_code->stk)) < EPSILA)
+        CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    else
+        CPU_code->ip++;
+}
+
+void Jne_CMD(CodeCPU* CPU_code)
+{
+    if (abs(Pop(CPU_code->stk) - Pop(CPU_code->stk)) < EPSILA)
+        CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+    else
+        CPU_code->ip++;
 }

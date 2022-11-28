@@ -1,8 +1,8 @@
-//#include "Onegin/Onegin.h"
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<math.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "config_cmd.h"
 
 #define ASSERT(condition)                                         \
@@ -18,9 +18,10 @@ if (!(condition)){                                                \
 #define ARG_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 0)
 #define MEM_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 1)
 #define REG_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 2)
+#define JMP_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 3)
 #define VAL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 8)
 
-const unsigned char MAX_CODE_CMD = 9; 
+const unsigned char MAX_TYPE_TOK = 10; 
 
 enum typetok
 {
@@ -33,18 +34,34 @@ enum typetok
     POP  = CMD_POP,
     OUT  = CMD_OUT,
     HLT  = CMD_HLT,
-    NUM  = MAX_CODE_CMD + 1,
-    MEM  = MAX_CODE_CMD + 2,
-    REG  = MAX_CODE_CMD + 3
+    JMP  = CMD_JMP,
+
+    NUM  = MAX_TYPE_TOK + 1,
+    MEM  = MAX_TYPE_TOK + 2,
+    REG  = MAX_TYPE_TOK + 3,
+    JMA  = MAX_TYPE_TOK + 4,
+    JML  = MAX_TYPE_TOK + 5
+};
+
+enum typejump
+{
+    JUN  = CMD_JMP,
+    JB   =  CMD_JB,
+    JA   =  CMD_JA,
+    JBE  = CMD_JBE,
+    JAE  = CMD_JAE,
+    JEE  = CMD_JEE,
+    JNE  = CMD_JNE
 };
 
 struct Token
 {
-    char* str = NULL;
-    size_t line = 0;
-    typetok type;
-    size_t dval = 0;
-    double val = 0;
+    char*    str     = NULL;
+    size_t   line    =    0;   
+    size_t   dval    =    0;
+    double   val     =    0;
+    typetok  type;
+    typejump jtype;
 };
 
 struct CodeCPU
@@ -58,9 +75,17 @@ struct CodeCPU
 struct asmtok
 {
     char*   buf        = NULL;
-    size_t  size = 0;
-    Token*  Toks       = NULL;
+    size_t  size       =    0;
+    Token*  Toks       = NULL; 
+    size_t  nJmp       =    0;
     size_t  nTok       =    0;
+};
+
+struct jump
+{
+    size_t ip   = 0;
+    size_t arg  = 0;
+    size_t line = 0;
 };
 
 
@@ -69,11 +94,8 @@ const char   ASSM_FILE[]       =      "D:\\VScode_projects\\CPU 2.0\\asm.txt";
 const char   SOFT_CPU_FILE[]   =   "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
 const int    CPU_SIGNATURE     =           0xBD;
 const int    CPU_VERSION       =              1;
-const int    MAX_SIZE_COMMAND  =             10;
-const int    MAX_LENGTH_VAL    =             10;
-const int    MAX_CPU_STR       =             22;
+const size_t MAX_JMP_ARG       =            256;
 
-const int    NAN_VAL           =              0;
 const size_t POISON_VAL        =     0xFDEFFEDF;
 
 void CreateAsm(asmtok*, FILE*);
@@ -91,6 +113,10 @@ size_t SizeVal(int);
 void WriteCodeFile(const CodeCPU*, FILE*);
 
 int IsMem(const char*);
+
+size_t IsJmpArg(const char*);
+
+size_t IsJmpLin(const char*);
 
 size_t ScanMem(const char*);
 
