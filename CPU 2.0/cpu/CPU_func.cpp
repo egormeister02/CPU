@@ -77,7 +77,9 @@ void DoProgram(CodeCPU* CPU_code)
         cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, CPU_code->ip));
         command[cmd](CPU_code);
     }
-    
+
+    printf("end of process");
+
     DtorCPU(CPU_code);
     free(command);
 }
@@ -182,7 +184,6 @@ void Out_CMD(CodeCPU* CPU_code)
 
 void Hlt_CMD(CodeCPU* CPU_code)
 {
-    printf("end of process");
     CPU_code->ip = CPU_code->nCmd;
 }
 

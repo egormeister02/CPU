@@ -1,15 +1,25 @@
-push 25
-pop [0]
+in
+pop RAX
+push 0
+pop RBX
+Push 0
 push 1
+pop [0]
 pop [1]
 1:
+push RBX
 push 1
+add
+pop RBX
+push [0]
 push [1]
 add
+push [1]
+pop [0]
 pop [1]
-push [1]
+push RAX
+push RBX
+jbe :1
 push [0]
-jae :1
-push [1]
 out
 hlt

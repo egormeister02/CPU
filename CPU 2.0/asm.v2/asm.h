@@ -22,6 +22,7 @@ if (!(condition)){                                                \
 #define VAL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 8)
 
 const unsigned char MAX_TYPE_TOK = 10; 
+const size_t        SIZE_JARG    = 20;
 
 enum typetok
 {
@@ -54,6 +55,24 @@ enum typejump
     JNE  = CMD_JNE
 };
 
+enum err
+{
+    ok,
+    mem,
+    tok,
+    push_arg,
+    pop_arg,
+    jmp_arg,
+    arg_cmd,
+    jmp_link
+};
+
+struct jmptor
+{
+    typejump type;
+    char val[20];
+};
+
 struct Token
 {
     char*    str     = NULL;
@@ -62,6 +81,7 @@ struct Token
     double   val     =    0;
     typetok  type;
     typejump jtype;
+    err      error   =   ok;
 };
 
 struct CodeCPU
@@ -70,6 +90,7 @@ struct CodeCPU
     int     version    =    0;
     size_t  nCmd       =    0;
     void*   bin_buf    = NULL;
+    int     error      =    0;
 };
 
 struct asmtok
@@ -78,23 +99,28 @@ struct asmtok
     size_t  size       =    0;
     Token*  Toks       = NULL; 
     size_t  nJmp       =    0;
+    size_t  nJLin      =    0;
     size_t  nTok       =    0;
+    int     error      =    0;
 };
 
 struct jump
 {
     size_t ip   = 0;
-    size_t arg  = 0;
+    char*  arg  = NULL;
     size_t line = 0;
 };
 
-
+extern FILE* ListFile;
 
 const char   ASSM_FILE[]       =      "D:\\VScode_projects\\CPU 2.0\\asm.txt";
 const char   SOFT_CPU_FILE[]   =   "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
+const char   LIST_FILE[]       =  "D:\\VScode_projects\\CPU 2.0\\listing.txt";
 const int    CPU_SIGNATURE     =           0xBD;
 const int    CPU_VERSION       =              1;
 const size_t MAX_JMP_ARG       =            256;
+const size_t SIZE_RAM          =            128;       
+const size_t SIZE_REG          =             16;
 
 const size_t POISON_VAL        =     0xFDEFFEDF;
 
@@ -108,9 +134,9 @@ void CodeCPUCtor(const asmtok*, CodeCPU*);
 
 void CreateCPUbuf(const asmtok*, CodeCPU*);
 
-size_t SizeVal(int);
-
 void WriteCodeFile(const CodeCPU*, FILE*);
+
+void PrintErr(err);
 
 int IsMem(const char*);
 

@@ -1,8 +1,8 @@
 #include <conio.h>
 #include "Stack.h"
 
-FILE* LogStack = StartLog();
-
+FILE* LogStack ;//= StartLog(); 
+ 
 void StackCtor(stk* stk, size_t capacity)
 {
     if (stk == NULL) StackCheck(stk);
@@ -198,7 +198,7 @@ void StackDumpFunc(const stk* stk, const char StackName[MAX_SIZE_STR], const cha
             fprintf(LogStack, "\t");
             fprintf(LogStack, (index < stk->size) ? "*" : " ");
             fprintf(LogStack, "[%llu] = ", index);
-            comment = (char*)(stk->data[index] == POISON ? "(POISON)": "");
+            comment = (char*)((size_t)stk->data[index] == (size_t)POISON ? "(POISON)": "");
             fprintf(LogStack, "%lf %s", stk->data[index], comment);
 
             fprintf(LogStack, "\n");

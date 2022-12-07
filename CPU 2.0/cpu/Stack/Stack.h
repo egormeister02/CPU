@@ -9,11 +9,11 @@
 
 
 #define POISON POISON_DOUBLE
-const char NAME_LOG_FILE[] = "D:\\VScode_projects\\CPU\\Stack\\LogStack.txt";
-
-typedef double Elem_t;
+const char NAME_LOG_FILE[] = "D:\\VScode_projects\\CPU 2.0\\Stack\\LogStack.txt";
 
 extern FILE* LogStack;
+
+typedef double Elem_t;
 
 struct stk
 {

@@ -59,9 +59,10 @@ void CreateToks(asmtok* assm)
 
             if (dval == POISON_VAL)
             {
-                printf("invalid memory index\n"
-                        "line: %llu", assm->Toks[index].line);
-                abort();
+                printf("ERROR: invalid memory index\n"
+                        "line: %llu\n", assm->Toks[index].line);
+                assm->Toks[index].error = mem;
+                assm->error++;
             }
 
             assm->Toks[index].dval = dval;
@@ -73,22 +74,15 @@ void CreateToks(asmtok* assm)
             assm->Toks[index].dval = IsReg(assm->Toks[index].str) - 1;
         }
 
-        else if (IsJmpArg(assm->Toks[index].str) != POISON_VAL)
+        else if (IsJmpArg(assm->Toks[index].str))
         {
             assm->Toks[index].type = JMA;
-            assm->Toks[index].dval = IsJmpArg(assm->Toks[index].str);
-            if (assm->Toks[index].dval >= MAX_JMP_ARG)
-            {
-                printf("ERROR: jump argumen more than maximum possible\n"
-                        "line: %llu", assm->Toks[index].line);
-                abort();
-            }
         }
 
-        else if (IsJmpLin(assm->Toks[index].str) != POISON_VAL)
+        else if (IsJmpLin(assm->Toks[index].str))
         {
             assm->Toks[index].type = JML;
-            assm->Toks[index].dval = IsJmpLin(assm->Toks[index].str);
+            assm->nJLin++;
         }
 
         else if ((size_t)ScanVal(assm->Toks[index].str) != POISON_VAL)
@@ -193,9 +187,10 @@ void CreateToks(asmtok* assm)
 
         else 
         {
-            printf("unknown token\n"
-                   "line: %llu", assm->Toks[index].line);
-            abort();
+            printf("ERROR: unknown token\n"
+                   "line: %llu\n", assm->Toks[index].line);
+            assm->Toks[index].error = tok;
+            assm->error++;
         }
         //printf("tok: %s; code: %d; val: %llu\n", assm->Toks[index].str, assm->Toks[index].type, assm->Toks[index].dval);
     }
@@ -222,70 +217,122 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
 
     CodeCPUCtor(assm, CPU_code);
 
-    size_t ip = 0;
-    size_t jcount = 0;
-    size_t jmpLin[MAX_JMP_ARG] = {0};
+    CPU_code->error = assm->error;
 
+    size_t ip        = 0;
+    size_t jcount    = 0;
+    size_t jLincount = 0;
+    int    flag      = 0;
+    int    codetok   = 0;
+    double val       = 0;
+    int    mem       = 0;
+    int    reg       = 0;
+    int    dec       = 4;
+
+    jump* jmpLin = (jump*)calloc(assm->nJLin, sizeof(jump));
     jump* jmpCmd = (jump*)calloc(assm->nJmp, sizeof(jump));
+
     ASSERT(jmpCmd != NULL);
+    ASSERT(jmpLin != NULL);
 
     for (size_t index = 0; index < assm->nTok; index++)
     {   
+        codetok = (assm->Toks[index].type == JMP ? assm->Toks[index].jtype: assm->Toks[index].type);
+        mem = 0;
+        reg = 0;
+        dec = 2;
+        val = 0;
+
+        fprintf(ListFile, "   %04d   |  %3d   |   %-7s |  %-9d  |  %d  |  %d  |  %4u  |  ",
+                            index, assm->Toks[index].line, assm->Toks[index].str, codetok, mem, reg, ip*16 + 16);
+
         switch (assm->Toks[index].type)
         {
         case PUSH:
             *CMD_BYIT(CPU_code->bin_buf, ip) = assm->Toks[index].type;
             *ARG_BYIT(CPU_code->bin_buf, ip) = 1;
+            PrintErr(assm->Toks[index].error);
             index++;
             if (assm->Toks[index].type == MEM)
             {
                 *MEM_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
+                mem = 1;
+                dec = 0;
+                val = assm->Toks[index].dval;
             }
             else if (assm->Toks[index].type == REG)
             {
                 *REG_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
+                reg = 1;
+                dec = 0;
+                val = assm->Toks[index].dval;
             }
             else if (assm->Toks[index].type == NUM)
             {
                 *((double*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].val;
+                val = assm->Toks[index].val;
             }
             else 
             {
-                printf("invalid push argument\n"
-                       "line: %llu", assm->Toks[index].line);
-                abort();
+                printf("ERROR: invalid push argument\n"
+                       "line: %llu\n", assm->Toks[index].line);
+                assm->Toks[index].error = push_arg;
+                CPU_code->error++;
             }
+
+            fprintf(ListFile, "   %04d   |  %3d   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4u  |  ",
+                            index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
+            PrintErr(assm->Toks[index].error);
+
             ip++;
+            continue;
             break;
 
         case POP:
             *CMD_BYIT(CPU_code->bin_buf, ip) = assm->Toks[index].type;
             *ARG_BYIT(CPU_code->bin_buf, ip) = 1;
+            PrintErr(assm->Toks[index].error);
             index++;
             if (assm->Toks[index].type == MEM)
             {
                 *MEM_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
+                mem = 1;
+                dec = 0;
+                val = assm->Toks[index].dval;
             }
             else if (assm->Toks[index].type == REG)
             {
                 *REG_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
+                reg = 1;
+                dec = 0;
+                val = assm->Toks[index].dval;
             }
             else if (assm->Toks[index].type == NUM)
             {
-                printf("invalid pop argument\n"
-                       "line: %llu", assm->Toks[index].line);
-                abort();
+                printf("ERROR: invalid pop argument\n"
+                       "line: %llu\n", assm->Toks[index].line);
+                assm->Toks[index].error = pop_arg;
+                val = assm->Toks[index].val;
+                CPU_code->error++;
             }
             else 
             {
                 index--;
                 *ARG_BYIT(CPU_code->bin_buf, ip) = 0;
+                ip++;
+                break;
             }
+
+            fprintf(ListFile, "   %04d   |  %3d   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4u  |  ",
+                            index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
+            PrintErr(assm->Toks[index].error);
+
             ip++;
+            continue;
             break;
 
         case JMP:
@@ -296,21 +343,31 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             if (assm->Toks[index].type == JMA)
             {
                 jmpCmd[jcount].ip = ip;
-                jmpCmd[jcount].arg = assm->Toks[index].dval;
+                jmpCmd[jcount].arg = assm->Toks[index].str + 1;
                 jmpCmd[jcount].line = assm->Toks[index].line;
+                //printf("jcmd[%llu].ip = %llu\n", jcount, jmpCmd[jcount].ip);
                 jcount++;
             }
             else 
             {
-                printf("invalid jump argument\n"
-                       "line: %llu", assm->Toks[index].line);
-                abort();
+                printf("ERROR: invalid jump argument\n"
+                       "line: %llu\n", assm->Toks[index].line);
+                assm->Toks[index].error = jmp_arg;
+                CPU_code->error++;
             }
             ip++;
             break;
         
         case JML:
-            jmpLin[assm->Toks[index].dval] = ip + 1;
+            
+            jmpLin[jLincount].arg  =  assm->Toks[index].str;            
+            jmpLin[jLincount].line = assm->Toks[index].line;
+            jmpLin[jLincount].ip   =                     ip;
+
+            jmpLin[jLincount].arg[strlen(jmpLin[jLincount].arg) - 1] = 0;
+            
+            jLincount++;
+            //printf("jlin.ip = %llu\n", jmpLin[jLincount - 1].ip);
             break;
         
         default:
@@ -321,28 +378,51 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             }
             else
             {
-                printf("Command was expected, but an argument was entered\n"
-                       "line: %llu", assm->Toks[index].line);
-                abort();
+                printf("ERROR: command was expected, but an argument was entered\n"
+                       "line: %llu\n", assm->Toks[index].line);
+                assm->Toks[index].error = arg_cmd;
+                CPU_code->error++;
             }
             break;
         }
+        PrintErr(assm->Toks[index].error);
     }
-
-    for (size_t index = 0; index < jcount; index++)
+    //printf("jmp: %llu\njlin: %llu\n", jcount, jLincount);
+    
+    for (size_t Jindex = 0; Jindex < jcount; Jindex++)
     {
-        if (jmpLin[jmpCmd[index].arg] != 0)
-            *((size_t*)VAL_BYIT(CPU_code->bin_buf, jmpCmd[index].ip)) = jmpLin[jmpCmd[index].arg] - 1;
-        else 
+        flag = 0;
+        for (size_t JLinindex = 0; JLinindex < jLincount; JLinindex++)
         {
-            printf("There is no pointer for this jump\n"
-                   "line: %llu", assm->Toks[index].line);
-            abort();
+            //printf("jcmd[%llu].ip = %llu jlin[%llu].ip = %llu\n", Jindex, jmpCmd[Jindex].ip, JLinindex, jmpLin[JLinindex].ip);
+            //printf("%s %s\n", jmpCmd[Jindex].arg, jmpLin[JLinindex].arg);
+            //printf("%d\n", strcmp(jmpCmd[Jindex].arg, jmpLin[JLinindex].arg));
+            if (strcmp(jmpCmd[Jindex].arg, jmpLin[JLinindex].arg) == 0)
+            {   
+                //printf("OK\n");
+                
+                if (!flag)
+                {
+                    
+                    *((size_t*)VAL_BYIT(CPU_code->bin_buf, jmpCmd[Jindex].ip)) = jmpLin[JLinindex].ip;
+                    flag = 1;
+                    //printf("OK\n");
+                }
+                else
+                {
+                    printf("ERROR: this jump link has already been met\n"
+                           "line: %llu\n", jmpLin[JLinindex].line);
+                    CPU_code->error++;
+                }
+                
+            }
         }
     }
-
+    //printf("ERRORS: %d\n", CPU_code->error);
     CPU_code->nCmd = ip;
+    
     free(jmpCmd);
+    free(jmpLin);
 }
 
 void WriteCodeFile(const CodeCPU* CPU_code, FILE* file)
@@ -354,9 +434,52 @@ void WriteCodeFile(const CodeCPU* CPU_code, FILE* file)
     *(int*)head_buf = CPU_code->signature;
     *(int*)((int*)head_buf + 1) = CPU_code->version;
     *(size_t*)((size_t*)head_buf + 1) = CPU_code->nCmd;
+    if (CPU_code->error == 0)
+    {
+        fwrite(head_buf, sizeof(size_t), 2, file);
+        fwrite(CPU_code->bin_buf, CPU_code->nCmd * 2, sizeof(size_t), file);
+    }
+}
 
-    fwrite(head_buf, sizeof(size_t), 2, file);
-    fwrite(CPU_code->bin_buf, CPU_code->nCmd * 2, sizeof(size_t), file);
+void PrintErr(err error)
+{
+    switch (error)
+    {
+    case ok:
+        fprintf(ListFile, "OK\n");
+        break;
+
+    case mem:
+        fprintf(ListFile, "ERROR: invalid memory index\n");
+        break;
+
+    case tok:
+        fprintf(ListFile, "ERROR: unknown token\n");
+        break;
+
+    case push_arg:
+        fprintf(ListFile, "ERROR: invalid push argument\n");
+        break;
+
+    case pop_arg:
+        fprintf(ListFile, "ERROR: invalid pop argument\n");
+        break;
+    
+    case jmp_arg:
+        fprintf(ListFile, "ERROR: invalid jump argument\n");
+        break;
+
+    case arg_cmd:
+        fprintf(ListFile, "ERROR: command was expected, but an argument was entered\n");
+        break;
+
+    case jmp_link:
+        fprintf(ListFile, "ERROR: this jump link has already been met\n");
+        break;
+    
+    default:
+        break;
+    }
 }
 
 int IsMem(const char* sval)
@@ -374,42 +497,19 @@ size_t IsJmpArg(const char* sval)
 {
     ASSERT(sval != NULL);
     if (sval[0] == ':')
-    {
-        size_t dval = 0;
-        for (size_t index = 1; index < strlen(sval); index++)
-        {
-            if (sval[index] >= '0' && sval[index] <= '9')
-            {
-                dval *= 10;
-                dval += (sval[index] - '0');
-            }
-            else return POISON_VAL;
-        }
-        return dval;
-    }
-    else return POISON_VAL;
+        return 1;
+    
+    else return 0;
 }
 
 size_t IsJmpLin(const char* sval)
 {
     ASSERT(sval != NULL);
 
-    size_t len = strlen(sval);
-    if (sval[len - 1] == ':')
-    {
-        size_t dval = 0;
-        for (size_t index = 0; index < len - 1; index++)
-        {
-            if (sval[index] >= '0' && sval[index] <= '9')
-            {
-                dval *= 10;
-                dval += (sval[index] - '0');
-            }
-            else return POISON_VAL;
-        }
-        return dval;
-    }
-    else return POISON_VAL;
+    if (sval[strlen(sval) - 1] == ':')
+        return 1;
+    
+    else return 0;
 }
 
 size_t ScanMem(const char* sval)
@@ -453,7 +553,7 @@ size_t IsReg(const char* reg)
 {
     ASSERT(reg != NULL);
 
-    if (strlen(reg) == 3 && reg[0] == 'R' && reg[2] == 'X' && reg[1] >= 'A' && reg[1] <= 'P')
+    if (strlen(reg) == 3 && reg[0] == 'R' && reg[2] == 'X' && reg[1] >= 'A' && reg[1] <= (char)('A' + SIZE_REG - 1))
         return reg[1] - 'A' + 1;
 
     return 0;
