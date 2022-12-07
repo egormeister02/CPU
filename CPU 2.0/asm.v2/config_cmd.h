@@ -15,4 +15,5 @@ const unsigned char CMD_JBE  = 13;
 const unsigned char CMD_JAE  = 14;
 const unsigned char CMD_JEE  = 15;
 const unsigned char CMD_JNE  = 16;
+const unsigned char CMD_CALL = 17;
  

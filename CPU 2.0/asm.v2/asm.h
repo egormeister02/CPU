@@ -36,6 +36,7 @@ enum typetok
     OUT  = CMD_OUT,
     HLT  = CMD_HLT,
     JMP  = CMD_JMP,
+    CALL = CMD_CALL,
 
     NUM  = MAX_TYPE_TOK + 1,
     MEM  = MAX_TYPE_TOK + 2,

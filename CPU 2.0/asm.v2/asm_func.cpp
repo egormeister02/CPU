@@ -244,7 +244,9 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
 
     for (size_t index = 0; index < assm->nTok; index++)
     {   
-        codetok = (int)(assm->Toks[index].type == JMP ? assm->Toks[index].jtype: assm->Toks[index].type);
+        codetok = (int)(assm->Toks[index].type == JMP ? assm->Toks[index].jtype :
+                        assm->Toks[index].type == JML ? ip*16 + 16 :
+                        assm->Toks[index].type);
         mem = 0;
         reg = 0;
         dec = 2;
@@ -370,14 +372,15 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             *CMD_BYIT(CPU_code->bin_buf, ip) = assm->Toks[index].jtype;
             *JMP_BYIT(CPU_code->bin_buf, ip) = 1;
             *ARG_BYIT(CPU_code->bin_buf, ip) = 1;
+            PrintErr(assm->Toks[index].error);
             index++;
             if (assm->Toks[index].type == JMA)
             {
                 jmpCmd[jcount].ip = ip;
                 jmpCmd[jcount].arg = assm->Toks[index].str + 1;
                 jmpCmd[jcount].line = assm->Toks[index].line;
-                //printf("jcmd[%llu].ip = %llu\n", jcount, jmpCmd[jcount].ip);
                 jcount++;
+
             }
             else 
             {
@@ -386,7 +389,12 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 assm->Toks[index].error = jmp_arg;
                 CPU_code->error++;
             }
+
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  |  %4llu  |  ",
+                              index, assm->Toks[index].line, assm->Toks[index].str, mem, reg, ip*16 + 8);
+            PrintErr(assm->Toks[index].error);
             ip++;
+            continue;
             break;
         
         case JML:
@@ -398,7 +406,6 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             jmpLin[jLincount].arg[strlen(jmpLin[jLincount].arg) - 1] = 0;
             
             jLincount++;
-            //printf("jlin.ip = %llu\n", jmpLin[jLincount - 1].ip);
             break;
         
         default:
@@ -425,9 +432,6 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
         flag = 0;
         for (size_t JLinindex = 0; JLinindex < jLincount; JLinindex++)
         {
-            //printf("jcmd[%llu].ip = %llu jlin[%llu].ip = %llu\n", Jindex, jmpCmd[Jindex].ip, JLinindex, jmpLin[JLinindex].ip);
-            //printf("%s %s\n", jmpCmd[Jindex].arg, jmpLin[JLinindex].arg);
-            //printf("%d\n", strcmp(jmpCmd[Jindex].arg, jmpLin[JLinindex].arg));
             if (strcmp(jmpCmd[Jindex].arg, jmpLin[JLinindex].arg) == 0)
             {   
                 //printf("OK\n");
@@ -449,7 +453,6 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             }
         }
     }
-    //printf("ERRORS: %d\n", CPU_code->error);
     CPU_code->nCmd = ip;
     
     free(jmpCmd);
