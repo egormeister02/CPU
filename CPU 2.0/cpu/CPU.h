@@ -20,7 +20,7 @@ if (!(condition)){                                                \
 const char   SOFT_CPU_FILE[]   =   "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
 const int    CPU_SIGNATURE     =           0xBD;
 const int    CPU_VERSION       =              1;
-const size_t MAX_CODE_CMD      =             16;
+const size_t MAX_CODE_CMD      =             18;
 const size_t SIZE_RAM          =            128;       
 const size_t SIZE_REG          =             16;
 const double EPSILA            =          10e-8;
@@ -34,7 +34,8 @@ struct CodeCPU
     void*   bin_buf    =     NULL;
     double* ram        =     NULL;
     double  reg[SIZE_REG] =    {};
-    stk*     stk        =      {};
+    stk*    ret_stk    =     NULL;
+    stk*    stk        =     NULL;
 };
 
 void ReadHead(CodeCPU*, FILE*);
@@ -78,3 +79,7 @@ void Jae_CMD(CodeCPU*);
 void Jee_CMD(CodeCPU*);
 
 void Jne_CMD(CodeCPU*);
+
+void Call_CMD(CodeCPU*);
+
+void Ret_CMD(CodeCPU*);

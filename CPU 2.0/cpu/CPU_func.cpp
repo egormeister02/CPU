@@ -48,20 +48,25 @@ void DoProgram(CodeCPU* CPU_code)
     ASSERT(CPU_code != NULL);
     if (!CPU_code->nCmd)
         return;
-    
+
     size_t cmd = 0;
 
     stk stk1      =    {};
+    stk stk2      =    {};
     StackCtor(&stk1, 0);
-    CPU_code->stk = &stk1;
+    StackCtor(&stk2, 0);
+
+    CPU_code->stk     = &stk1;
+    CPU_code->ret_stk = &stk2;
 
     void(**command)(CodeCPU*);
-    command = CreateArrayCmd(MAX_CODE_CMD);
+    command = CreateArrayCmd(MAX_CODE_CMD + 1);
 
     while (CPU_code->ip < CPU_code->nCmd)
     {
         cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, CPU_code->ip));
         command[cmd](CPU_code);
+        StackDump(CPU_code->ret_stk);
     }
 
     printf("end of process");
@@ -93,21 +98,23 @@ void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*)
     CMD = (void(**)(CodeCPU*))calloc(number_cmd, sizeof(void(*)));
 
     CMD[CMD_PUSH] = Push_CMD;
-    CMD[CMD_ADD] = Add_CMD;
-    CMD[CMD_OUT] = Out_CMD;
-    CMD[CMD_SUB] = Sub_CMD;
-    CMD[CMD_MUL] = Mul_CMD;
-    CMD[CMD_DIV] = Div_CMD;
-    CMD[CMD_IN]  =  In_CMD;
-    CMD[CMD_POP] = Pop_CMD;
-    CMD[CMD_HLT] = Hlt_CMD;
-    CMD[CMD_JMP] = Jmp_CMD;
-    CMD[CMD_JB]  =  Jb_CMD;
-    CMD[CMD_JA]  =  Ja_CMD;
-    CMD[CMD_JBE] = Jbe_CMD;
-    CMD[CMD_JAE] = Jae_CMD;
-    CMD[CMD_JEE] = Jee_CMD;
-    CMD[CMD_JNE] = Jne_CMD;
+    CMD[CMD_ADD]  =  Add_CMD;
+    CMD[CMD_OUT]  =  Out_CMD;
+    CMD[CMD_SUB]  =  Sub_CMD;
+    CMD[CMD_MUL]  =  Mul_CMD;
+    CMD[CMD_DIV]  =  Div_CMD;
+    CMD[CMD_IN]   =   In_CMD;
+    CMD[CMD_POP]  =  Pop_CMD;
+    CMD[CMD_HLT]  =  Hlt_CMD;
+    CMD[CMD_JMP]  =  Jmp_CMD;
+    CMD[CMD_JB]   =   Jb_CMD;
+    CMD[CMD_JA]   =   Ja_CMD;
+    CMD[CMD_JBE]  =  Jbe_CMD;
+    CMD[CMD_JAE]  =  Jae_CMD;
+    CMD[CMD_JEE]  =  Jee_CMD;
+    CMD[CMD_JNE]  =  Jne_CMD;
+    CMD[CMD_CALL] = Call_CMD;
+    CMD[CMD_RET]  =  Ret_CMD;
     return CMD;
 }
 
@@ -253,4 +260,15 @@ void Jne_CMD(CodeCPU* CPU_code)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
+}
+
+void Call_CMD(CodeCPU* CPU_code)
+{
+    Push(CPU_code->ret_stk, (double)(CPU_code->ip + 1));
+    CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
+}
+
+void Ret_CMD(CodeCPU* CPU_code)
+{
+    CPU_code->ip = (size_t)Pop(CPU_code->ret_stk);
 }

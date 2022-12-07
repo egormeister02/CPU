@@ -1,7 +1,7 @@
 #include <conio.h>
 #include "Stack.h"
 
-FILE* LogStack ;//= StartLog(); 
+FILE* LogStack = StartLog();
  
 void StackCtor(stk* stk, size_t capacity)
 {

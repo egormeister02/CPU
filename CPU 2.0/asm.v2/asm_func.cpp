@@ -138,6 +138,11 @@ void CreateToks(asmtok* assm)
             assm->Toks[index].type = OUT;
         }
 
+        else if (stricmp(assm->Toks[index].str, "ret") == 0)
+        {
+            assm->Toks[index].type = RET;
+        }
+
         else if (stricmp(assm->Toks[index].str, "hlt") == 0)
         {
             assm->Toks[index].type = HLT;
@@ -189,6 +194,12 @@ void CreateToks(asmtok* assm)
         {
             assm->Toks[index].type  =  JMP;
             assm->Toks[index].jtype =  JNE;
+            assm->nJmp++;
+        }
+
+        else if (stricmp(assm->Toks[index].str, "call") == 0)
+        {
+            assm->Toks[index].type =  CALL;
             assm->nJmp++;
         }
 
@@ -379,6 +390,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 jmpCmd[jcount].ip = ip;
                 jmpCmd[jcount].arg = assm->Toks[index].str + 1;
                 jmpCmd[jcount].line = assm->Toks[index].line;
+                jmpCmd[jcount].numtok = index;
                 jcount++;
 
             }
@@ -396,12 +408,43 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             ip++;
             continue;
             break;
+
+        case CALL:
+            *CMD_BYIT(CPU_code->bin_buf, ip) = assm->Toks[index].type;
+            *CALL_BYIT(CPU_code->bin_buf, ip) = 1;
+            *ARG_BYIT(CPU_code->bin_buf, ip) = 1;
+            PrintErr(assm->Toks[index].error);
+            index++;
+            if (assm->Toks[index].type == JMA)
+            {
+                jmpCmd[jcount].ip = ip;
+                jmpCmd[jcount].arg = assm->Toks[index].str + 1;
+                jmpCmd[jcount].line = assm->Toks[index].line;
+                jmpCmd[jcount].numtok = index;
+                jcount++;
+
+            }
+            else 
+            {
+                printf("ERROR: invalid call argument\n"
+                       "line: %llu\n", assm->Toks[index].line);
+                assm->Toks[index].error = call_arg;
+                CPU_code->error++;
+            }
+
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  |  %4llu  |  ",
+                              index, assm->Toks[index].line, assm->Toks[index].str, mem, reg, ip*16 + 8);
+            PrintErr(assm->Toks[index].error);
+            ip++;
+            continue;
+            break;
         
         case JML:
             
-            jmpLin[jLincount].arg  =  assm->Toks[index].str;            
-            jmpLin[jLincount].line = assm->Toks[index].line;
-            jmpLin[jLincount].ip   =                     ip;
+            jmpLin[jLincount].arg    =  assm->Toks[index].str;            
+            jmpLin[jLincount].line   = assm->Toks[index].line;
+            jmpLin[jLincount].ip     =                     ip;
+            jmpLin[jLincount].numtok =                  index;
 
             jmpLin[jLincount].arg[strlen(jmpLin[jLincount].arg) - 1] = 0;
             
@@ -425,7 +468,6 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
         }
         PrintErr(assm->Toks[index].error);
     }
-    //printf("jmp: %llu\njlin: %llu\n", jcount, jLincount);
     
     for (size_t Jindex = 0; Jindex < jcount; Jindex++)
     {
@@ -434,23 +476,27 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
         {
             if (strcmp(jmpCmd[Jindex].arg, jmpLin[JLinindex].arg) == 0)
             {   
-                //printf("OK\n");
-                
                 if (!flag)
                 {
                     
                     *((size_t*)VAL_BYIT(CPU_code->bin_buf, jmpCmd[Jindex].ip)) = jmpLin[JLinindex].ip;
                     flag = 1;
-                    //printf("OK\n");
                 }
                 else
                 {
                     printf("ERROR: this jump link has already been met\n"
                            "line: %llu\n", jmpLin[JLinindex].line);
+                    assm->Toks[jmpLin[JLinindex].numtok].error = jmp_link;
                     CPU_code->error++;
                 }
                 
             }
+        }
+        if (!flag)
+        {
+            printf("ERROR: not found link for this jump or call\n"
+                           "line: %llu\n", jmpCmd[Jindex].line);
+                    CPU_code->error++;
         }
     }
     CPU_code->nCmd = ip;
@@ -508,7 +554,11 @@ void PrintErr(err error)
         break;
 
     case jmp_link:
-        fprintf(ListFile, "ERROR: this jump link has already been met\n");
+        fprintf(ListFile, "ERROR: this link has already been met\n");
+        break;
+
+    case call_arg:
+        fprintf(ListFile, "ERROR: invalid call argument\n");
         break;
     
     default:

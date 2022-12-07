@@ -19,9 +19,10 @@ if (!(condition)){                                                \
 #define MEM_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 1)
 #define REG_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 2)
 #define JMP_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 3)
+#define CALL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 4)
 #define VAL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 8)
 
-const unsigned char MAX_TYPE_TOK = 10; 
+const unsigned char MAX_TYPE_TOK = 12; 
 const size_t        SIZE_JARG    = 20;
 
 enum typetok
@@ -37,6 +38,7 @@ enum typetok
     HLT  = CMD_HLT,
     JMP  = CMD_JMP,
     CALL = CMD_CALL,
+    RET  = CMD_RET,
 
     NUM  = MAX_TYPE_TOK + 1,
     MEM  = MAX_TYPE_TOK + 2,
@@ -65,14 +67,9 @@ enum err
     push_arg,
     pop_arg,
     jmp_arg,
+    call_arg,
     arg_cmd,
     jmp_link
-};
-
-struct jmptor
-{
-    typejump type;
-    char val[20];
 };
 
 struct Token
@@ -108,9 +105,10 @@ struct asmtok
 
 struct jump
 {
-    size_t ip   = 0;
-    char*  arg  = NULL;
-    size_t line = 0;
+    size_t ip     =    0;
+    char*  arg    = NULL;
+    size_t line   =    0;
+    size_t numtok =    0;
 };
 
 extern FILE* ListFile;

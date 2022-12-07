@@ -9,7 +9,7 @@
 
 
 #define POISON POISON_DOUBLE
-const char NAME_LOG_FILE[] = "D:\\VScode_projects\\CPU 2.0\\Stack\\LogStack.txt";
+const char NAME_LOG_FILE[] = "D:\\VScode_projects\\CPU 2.0\\cpu\\Stack\\LogStack.txt";
 
 extern FILE* LogStack;
 

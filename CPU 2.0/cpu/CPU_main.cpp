@@ -1,8 +1,8 @@
 #include "CPU.h"
+
 int main()
 {
-    //LogStack = StartLog();
-    //ASSERT(LogStack != NULL);
+    ASSERT(LogStack != NULL);
     
     FILE* codefile = fopen(SOFT_CPU_FILE, "r+b");
 

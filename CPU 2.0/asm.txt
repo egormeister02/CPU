@@ -1,4 +1,9 @@
 in
+call :fib
+out 
+hlt
+
+fib:
 pop RAX
 push 0
 pop RBX
@@ -21,5 +26,4 @@ push RAX
 push RBX
 jbe :1
 push [0]
-out
-hlt
+ret
