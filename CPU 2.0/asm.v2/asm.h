@@ -40,8 +40,9 @@ enum typetok
     NUM  = MAX_TYPE_TOK + 1,
     MEM  = MAX_TYPE_TOK + 2,
     REG  = MAX_TYPE_TOK + 3,
-    JMA  = MAX_TYPE_TOK + 4,
-    JML  = MAX_TYPE_TOK + 5
+    MRG  = MAX_TYPE_TOK + 4,
+    JMA  = MAX_TYPE_TOK + 5,
+    JML  = MAX_TYPE_TOK + 6
 };
 
 enum typejump
@@ -149,4 +150,6 @@ size_t ScanMem(const char*);
 double ScanVal(const char*);
 
 size_t IsReg(const char*);
+
+size_t IsMrg(const char*);
 

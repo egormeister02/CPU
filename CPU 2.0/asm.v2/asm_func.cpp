@@ -52,7 +52,14 @@ void CreateToks(asmtok* assm)
     for (size_t index = 0; index < assm->nTok; index++)
     {
         size_t dval = POISON_VAL;
-        if (IsMem(assm->Toks[index].str))
+
+        if (IsMrg(assm->Toks[index].str))
+        {
+            assm->Toks[index].type = MRG;
+            assm->Toks[index].dval = IsMrg(assm->Toks[index].str) - 1;
+        }
+
+        else if (IsMem(assm->Toks[index].str))
         {
             assm->Toks[index].type = MEM;
             dval = ScanMem(assm->Toks[index].str);
@@ -237,13 +244,13 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
 
     for (size_t index = 0; index < assm->nTok; index++)
     {   
-        codetok = (assm->Toks[index].type == JMP ? assm->Toks[index].jtype: assm->Toks[index].type);
+        codetok = (int)(assm->Toks[index].type == JMP ? assm->Toks[index].jtype: assm->Toks[index].type);
         mem = 0;
         reg = 0;
         dec = 2;
         val = 0;
 
-        fprintf(ListFile, "   %04d   |  %3d   |   %-7s |  %-9d  |  %d  |  %d  |  %4u  |  ",
+        fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-9d  |  %d  |  %d  |  %4llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, codetok, mem, reg, ip*16 + 16);
 
         switch (assm->Toks[index].type)
@@ -253,36 +260,48 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             *ARG_BYIT(CPU_code->bin_buf, ip) = 1;
             PrintErr(assm->Toks[index].error);
             index++;
-            if (assm->Toks[index].type == MEM)
+            switch (assm->Toks[index].type)
             {
+            case MRG:
+                *MEM_BYIT(CPU_code->bin_buf, ip) = 1;
+                *REG_BYIT(CPU_code->bin_buf, ip) = 1;
+                *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
+                mem = 1;
+                reg = 1;
+                dec = 0;
+                val = (double)assm->Toks[index].dval;
+                break;
+
+            case MEM:
                 *MEM_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
                 mem = 1;
                 dec = 0;
-                val = assm->Toks[index].dval;
-            }
-            else if (assm->Toks[index].type == REG)
-            {
+                val = (double)assm->Toks[index].dval;
+                break;
+
+            case REG:
                 *REG_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
                 reg = 1;
                 dec = 0;
-                val = assm->Toks[index].dval;
-            }
-            else if (assm->Toks[index].type == NUM)
-            {
+                val = (double)assm->Toks[index].dval;
+                break;
+
+            case NUM:
                 *((double*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].val;
                 val = assm->Toks[index].val;
-            }
-            else 
-            {
+                break;
+            
+            default:
                 printf("ERROR: invalid push argument\n"
                        "line: %llu\n", assm->Toks[index].line);
                 assm->Toks[index].error = push_arg;
                 CPU_code->error++;
+                break;
             }
 
-            fprintf(ListFile, "   %04d   |  %3d   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4u  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
             PrintErr(assm->Toks[index].error);
 
@@ -295,39 +314,51 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
             *ARG_BYIT(CPU_code->bin_buf, ip) = 1;
             PrintErr(assm->Toks[index].error);
             index++;
-            if (assm->Toks[index].type == MEM)
+
+            switch (assm->Toks[index].type)
             {
+            case MRG:
+                *MEM_BYIT(CPU_code->bin_buf, ip) = 1;
+                *REG_BYIT(CPU_code->bin_buf, ip) = 1;
+                *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
+                mem = 1;
+                reg = 1;
+                dec = 0;
+                val = (double)assm->Toks[index].dval;
+                break;
+
+            case MEM:
                 *MEM_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
                 mem = 1;
                 dec = 0;
-                val = assm->Toks[index].dval;
-            }
-            else if (assm->Toks[index].type == REG)
-            {
+                val = (double)assm->Toks[index].dval;
+                break;
+
+            case REG:
                 *REG_BYIT(CPU_code->bin_buf, ip) = 1;
                 *((size_t*)VAL_BYIT(CPU_code->bin_buf, ip)) = assm->Toks[index].dval;
                 reg = 1;
                 dec = 0;
-                val = assm->Toks[index].dval;
-            }
-            else if (assm->Toks[index].type == NUM)
-            {
+                val = (double)assm->Toks[index].dval;
+                break;
+
+            case NUM:
                 printf("ERROR: invalid pop argument\n"
                        "line: %llu\n", assm->Toks[index].line);
                 assm->Toks[index].error = pop_arg;
                 val = assm->Toks[index].val;
                 CPU_code->error++;
-            }
-            else 
-            {
+                break;
+            
+            default:
                 index--;
                 *ARG_BYIT(CPU_code->bin_buf, ip) = 0;
                 ip++;
                 break;
             }
 
-            fprintf(ListFile, "   %04d   |  %3d   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4u  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
             PrintErr(assm->Toks[index].error);
 
@@ -555,6 +586,17 @@ size_t IsReg(const char* reg)
 
     if (strlen(reg) == 3 && reg[0] == 'R' && reg[2] == 'X' && reg[1] >= 'A' && reg[1] <= (char)('A' + SIZE_REG - 1))
         return reg[1] - 'A' + 1;
+
+    return 0;
+}
+
+size_t IsMrg(const char* sval)
+{
+    if ((sval[0] == '[') && (sval[strlen(sval) - 1] == ']'))
+    {
+        if (strlen(sval) == 5 && sval[1] == 'R' && sval[3] == 'X' && sval[2] >= 'A' && sval[2] <= (char)('A' + SIZE_REG - 1))
+        return sval[2] - 'A' + 1;
+    }
 
     return 0;
 }

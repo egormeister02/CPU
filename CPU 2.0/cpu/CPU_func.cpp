@@ -15,14 +15,15 @@ void ReadHead( CodeCPU* CPU_code, FILE* codefile)
     if (CPU_code->signature != CPU_SIGNATURE)
     {
         printf("ERROR: invalid signature!!!\n");
-        abort();
+        CPU_code->nCmd = 0;
     }
-    if (CPU_code->version != CPU_VERSION)
+    else if (CPU_code->version != CPU_VERSION)
     {
         printf("ERROR: invalid version!!!\n");
-        abort();
+        CPU_code->nCmd = 0;
     }
-    CPU_code->nCmd = *((size_t*)((size_t*)head + 1));
+    else 
+        CPU_code->nCmd = *((size_t*)((size_t*)head + 1));
     free(head);
 }
 
@@ -42,27 +43,12 @@ void CreateCPU(CodeCPU* CPU_code, FILE* codefile)
     fread(CPU_code->bin_buf, sizeof(size_t), CPU_code->nCmd * 2, codefile);
 }
 
-void DtorCPU(CodeCPU* CPU_code)
-{
-    ASSERT(CPU_code != NULL);
-
-    StackDtor(CPU_code->stk);
-    free(CPU_code->bin_buf);
-    free(CPU_code->ram);
-
-    CPU_code->signature  = (size_t)POISON;
-    CPU_code->version    = (size_t)POISON;
-    CPU_code->nCmd       =        0;
-    CPU_code->ip         =        0;
-    CPU_code->bin_buf    =     NULL;
-    CPU_code->ram        =     NULL;
-    CPU_code->stk        =     NULL;
-}
-
 void DoProgram(CodeCPU* CPU_code)
 {
     ASSERT(CPU_code != NULL);
-
+    if (!CPU_code->nCmd)
+        return;
+    
     size_t cmd = 0;
 
     stk stk1      =    {};
@@ -82,6 +68,23 @@ void DoProgram(CodeCPU* CPU_code)
 
     DtorCPU(CPU_code);
     free(command);
+}
+
+void DtorCPU(CodeCPU* CPU_code)
+{
+    ASSERT(CPU_code != NULL);
+
+    StackDtor(CPU_code->stk);
+    free(CPU_code->bin_buf);
+    free(CPU_code->ram);
+
+    CPU_code->signature  = (size_t)POISON;
+    CPU_code->version    = (size_t)POISON;
+    CPU_code->nCmd       =        0;
+    CPU_code->ip         =        0;
+    CPU_code->bin_buf    =     NULL;
+    CPU_code->ram        =     NULL;
+    CPU_code->stk        =     NULL;
 }
 
 void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*) 
@@ -111,9 +114,15 @@ void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*)
 void Push_CMD(CodeCPU* CPU_code)
 {
     double val = 0;
+    size_t memid = 0;
     if (*MEM_BYIT(CPU_code->bin_buf, CPU_code->ip))
     {
-        val = CPU_code->ram[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+        if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+            memid = (size_t)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+        else
+            memid = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
+
+        val = CPU_code->ram[memid];
     }
     else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
         val = (double)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
@@ -153,9 +162,15 @@ void Pop_CMD(CodeCPU* CPU_code)
 {
     if (*ARG_BYIT(CPU_code->bin_buf, CPU_code->ip))
     {
+        size_t memid = 0;
         if (*MEM_BYIT(CPU_code->bin_buf, CPU_code->ip))
         {
-            CPU_code->ram[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)] = Pop(CPU_code->stk);
+            if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+                memid = (size_t)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+            else
+                memid = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
+
+            CPU_code->ram[memid] = Pop(CPU_code->stk);
         }
         else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
         {

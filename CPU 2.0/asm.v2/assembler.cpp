@@ -24,7 +24,7 @@ int main()
 
     WriteCodeFile(&CPU_code, codefile);
 
-    printf("ERRORS: %d\n", CPU_code.error);
+    printf("\nERRORS: %d\n", CPU_code.error);
     
     fclose(source);
     fclose(codefile);
