@@ -155,7 +155,7 @@ FILE* StartLog(void)
 
 void FinishLog(void)
 {
-    fprintf(LogStack, "\n------------------------------Finish Logging-------------------------------\n");
+    fprintf(LogStack, "\n-------------------------------Finish Logging--------------------------------\n");
     fclose (LogStack);
     LogStack = NULL;
 }

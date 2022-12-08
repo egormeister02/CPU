@@ -1,29 +1,41 @@
-in
-call :fib
-out 
-hlt
-
-fib:
-pop RAX
 push 0
-pop RBX
-Push 0
+pop RAX
 push 1
-pop [0]
-pop [1]
+pop RBX
+
 1:
-push RBX
+push 1
+pop [RAX]
+
+push RAX
+push 1 
+add 
+pop RAX
+
+push RAX
 push 1
 add
-pop RBX
-push [0]
-push [1]
-add
-push [1]
-pop [0]
-pop [1]
-push RAX
+push 100
 push RBX
-jbe :1
-push [0]
-ret
+mul
+ja :1
+
+push 10
+pop [RAX]
+
+push RAX
+push 1 
+add 
+pop RAX
+
+push RBX
+push 1 
+add 
+pop RBX
+
+push RAX
+push 10000
+ja :1
+
+graph
+hlt

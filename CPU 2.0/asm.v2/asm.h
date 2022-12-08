@@ -22,8 +22,7 @@ if (!(condition)){                                                \
 #define CALL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 4)
 #define VAL_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 8)
 
-const unsigned char MAX_TYPE_TOK = 12; 
-const size_t        SIZE_JARG    = 20;
+const unsigned char MAX_TYPE_TOK = 19; 
 
 enum typetok
 {
@@ -39,6 +38,7 @@ enum typetok
     JMP  = CMD_JMP,
     CALL = CMD_CALL,
     RET  = CMD_RET,
+    GRA  = CMD_GRA,
 
     NUM  = MAX_TYPE_TOK + 1,
     MEM  = MAX_TYPE_TOK + 2,
@@ -118,7 +118,6 @@ const char   SOFT_CPU_FILE[]   =   "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
 const char   LIST_FILE[]       =  "D:\\VScode_projects\\CPU 2.0\\listing.txt";
 const int    CPU_SIGNATURE     =           0xBD;
 const int    CPU_VERSION       =              1;
-const size_t MAX_JMP_ARG       =            256;
 const size_t SIZE_RAM          =            128;       
 const size_t SIZE_REG          =             16;
 
@@ -127,8 +126,6 @@ const size_t POISON_VAL        =     0xFDEFFEDF;
 void CreateAsm(asmtok*, FILE*);
 
 void CreateToks(asmtok*);
-
-void CreateTypeTok(Token*);
 
 void CodeCPUCtor(const asmtok*, CodeCPU*);
 
@@ -152,3 +149,6 @@ size_t IsReg(const char*);
 
 size_t IsMrg(const char*);
 
+FILE* StartList(void);
+
+void FinishList(void);

@@ -1,5 +1,7 @@
-#include<conio.h>
+//#include<conio.h>
 #include "asm.h"
+
+FILE* ListFile = StartList();
 
 void CreateAsm(asmtok* assm, FILE* file)
 {
@@ -143,6 +145,11 @@ void CreateToks(asmtok* assm)
             assm->Toks[index].type = RET;
         }
 
+        else if (stricmp(assm->Toks[index].str, "graph") == 0)
+        {
+            assm->Toks[index].type = GRA;
+        }
+
         else if (stricmp(assm->Toks[index].str, "hlt") == 0)
         {
             assm->Toks[index].type = HLT;
@@ -210,7 +217,6 @@ void CreateToks(asmtok* assm)
             assm->Toks[index].error = tok;
             assm->error++;
         }
-        //printf("tok: %s; code: %d; val: %llu\n", assm->Toks[index].str, assm->Toks[index].type, assm->Toks[index].dval);
     }
     
 }
@@ -245,10 +251,10 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
     double val       = 0;
     int    mem       = 0;
     int    reg       = 0;
-    int    dec       = 4;
+    int    dec       = 0;
 
     jump* jmpLin = (jump*)calloc(assm->nJLin, sizeof(jump));
-    jump* jmpCmd = (jump*)calloc(assm->nJmp, sizeof(jump));
+    jump* jmpCmd =  (jump*)calloc(assm->nJmp, sizeof(jump));
 
     ASSERT(jmpCmd != NULL);
     ASSERT(jmpLin != NULL);
@@ -263,7 +269,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
         dec = 2;
         val = 0;
 
-        fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-9d  |  %d  |  %d  |  %4llu  |  ",
+        fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-9d  |  %d  |  %d  | %5llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, codetok, mem, reg, ip*16 + 16);
 
         switch (assm->Toks[index].type)
@@ -314,7 +320,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 break;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  | %5llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
             PrintErr(assm->Toks[index].error);
 
@@ -371,7 +377,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 break;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  |  %4llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  | %5llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
             PrintErr(assm->Toks[index].error);
 
@@ -402,7 +408,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 CPU_code->error++;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  |  %4llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  | %5llu  |  ",
                               index, assm->Toks[index].line, assm->Toks[index].str, mem, reg, ip*16 + 8);
             PrintErr(assm->Toks[index].error);
             ip++;
@@ -432,7 +438,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 CPU_code->error++;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  |  %4llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  | %5llu  |  ",
                               index, assm->Toks[index].line, assm->Toks[index].str, mem, reg, ip*16 + 8);
             PrintErr(assm->Toks[index].error);
             ip++;
@@ -486,7 +492,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 {
                     printf("ERROR: this jump link has already been met\n"
                            "line: %llu\n", jmpLin[JLinindex].line);
-                    assm->Toks[jmpLin[JLinindex].numtok].error = jmp_link;
+                    fprintf(ListFile, "\nERROR: this jump link has already been met\n\tNumTok: %04llu\n", jmpLin[JLinindex].numtok);
                     CPU_code->error++;
                 }
                 
@@ -496,11 +502,14 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
         {
             printf("ERROR: not found link for this jump or call\n"
                            "line: %llu\n", jmpCmd[Jindex].line);
+            fprintf(ListFile, "\nERROR: not found link for this jump or call\n\tNumTok: %04llu\n", jmpCmd[Jindex].numtok);
                     CPU_code->error++;
         }
     }
+
     CPU_code->nCmd = ip;
-    
+    FinishList();
+
     free(jmpCmd);
     free(jmpLin);
 }
@@ -514,6 +523,7 @@ void WriteCodeFile(const CodeCPU* CPU_code, FILE* file)
     *(int*)head_buf = CPU_code->signature;
     *(int*)((int*)head_buf + 1) = CPU_code->version;
     *(size_t*)((size_t*)head_buf + 1) = CPU_code->nCmd;
+
     if (CPU_code->error == 0)
     {
         fwrite(head_buf, sizeof(size_t), 2, file);
@@ -652,4 +662,18 @@ size_t IsMrg(const char* sval)
     }
 
     return 0;
+}
+
+FILE* StartList(void)
+{
+    ListFile = fopen(LIST_FILE, "w");
+    fprintf(ListFile, "-------------------------------Start_Listing-------------------------------\n\n");
+    fprintf(ListFile, "  NumTok  |  Line  |  String   |  code/val   | MEM | REG |   pos  |  comment  \n");
+    return ListFile;
+}
+
+void FinishList(void)
+{
+    fprintf(ListFile, "\n-------------------------------Finish_Listing------------------------------\n");
+    fclose(ListFile);
 }

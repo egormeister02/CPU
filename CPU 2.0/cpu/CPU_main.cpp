@@ -2,8 +2,6 @@
 
 int main()
 {
-    ASSERT(LogStack != NULL);
-    
     FILE* codefile = fopen(SOFT_CPU_FILE, "r+b");
 
     struct CodeCPU CPU_code = {};
@@ -12,6 +10,5 @@ int main()
 
     DoProgram(&CPU_code);
     
-    
-    //FinishLog();
+    FinishLog();
 }

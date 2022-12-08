@@ -24,6 +24,7 @@ void ReadHead( CodeCPU* CPU_code, FILE* codefile)
     }
     else 
         CPU_code->nCmd = *((size_t*)((size_t*)head + 1));
+
     free(head);
 }
 
@@ -46,30 +47,25 @@ void CreateCPU(CodeCPU* CPU_code, FILE* codefile)
 void DoProgram(CodeCPU* CPU_code)
 {
     ASSERT(CPU_code != NULL);
-    if (!CPU_code->nCmd)
-        return;
-
-    size_t cmd = 0;
+    if (!CPU_code->nCmd) return;
 
     stk stk1      =    {};
     stk stk2      =    {};
     StackCtor(&stk1, 0);
     StackCtor(&stk2, 0);
-
     CPU_code->stk     = &stk1;
     CPU_code->ret_stk = &stk2;
 
-    void(**command)(CodeCPU*);
-    command = CreateArrayCmd(MAX_CODE_CMD + 1);
+    size_t cmd                =                                0;
+    void(**command)(CodeCPU*) = CreateArrayCmd(MAX_CODE_CMD);
 
     while (CPU_code->ip < CPU_code->nCmd)
     {
         cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, CPU_code->ip));
         command[cmd](CPU_code);
-        StackDump(CPU_code->ret_stk);
     }
 
-    printf("end of process");
+    printf("\nend of process");
 
     DtorCPU(CPU_code);
     free(command);
@@ -95,26 +91,27 @@ void DtorCPU(CodeCPU* CPU_code)
 void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*) 
 {
     void(**CMD)(CodeCPU*);
-    CMD = (void(**)(CodeCPU*))calloc(number_cmd, sizeof(void(*)));
+    CMD = (void(**)(CodeCPU*))calloc(number_cmd + 1, sizeof(void(*)));
 
-    CMD[CMD_PUSH] = Push_CMD;
-    CMD[CMD_ADD]  =  Add_CMD;
-    CMD[CMD_OUT]  =  Out_CMD;
-    CMD[CMD_SUB]  =  Sub_CMD;
-    CMD[CMD_MUL]  =  Mul_CMD;
-    CMD[CMD_DIV]  =  Div_CMD;
-    CMD[CMD_IN]   =   In_CMD;
-    CMD[CMD_POP]  =  Pop_CMD;
-    CMD[CMD_HLT]  =  Hlt_CMD;
-    CMD[CMD_JMP]  =  Jmp_CMD;
-    CMD[CMD_JB]   =   Jb_CMD;
-    CMD[CMD_JA]   =   Ja_CMD;
-    CMD[CMD_JBE]  =  Jbe_CMD;
-    CMD[CMD_JAE]  =  Jae_CMD;
-    CMD[CMD_JEE]  =  Jee_CMD;
-    CMD[CMD_JNE]  =  Jne_CMD;
-    CMD[CMD_CALL] = Call_CMD;
-    CMD[CMD_RET]  =  Ret_CMD;
+    CMD[CMD_PUSH] =  Push_CMD;
+    CMD[CMD_ADD]  =   Add_CMD;
+    CMD[CMD_OUT]  =   Out_CMD;
+    CMD[CMD_SUB]  =   Sub_CMD;
+    CMD[CMD_MUL]  =   Mul_CMD;
+    CMD[CMD_DIV]  =   Div_CMD;
+    CMD[CMD_IN]   =    In_CMD;
+    CMD[CMD_POP]  =   Pop_CMD;
+    CMD[CMD_HLT]  =   Hlt_CMD;
+    CMD[CMD_JMP]  =   Jmp_CMD;
+    CMD[CMD_JB]   =    Jb_CMD;
+    CMD[CMD_JA]   =    Ja_CMD;
+    CMD[CMD_JBE]  =   Jbe_CMD;
+    CMD[CMD_JAE]  =   Jae_CMD;
+    CMD[CMD_JEE]  =   Jee_CMD;
+    CMD[CMD_JNE]  =   Jne_CMD;
+    CMD[CMD_CALL] =  Call_CMD;
+    CMD[CMD_RET]  =   Ret_CMD;
+    CMD[CMD_GRA]  = Graph_CMD;
     return CMD;
 }
 
@@ -192,7 +189,7 @@ void Pop_CMD(CodeCPU* CPU_code)
 void In_CMD(CodeCPU* CPU_code)
 {
     double x = 0;
-    printf("enter the number\n");
+    printf("\nenter the number\n");
     scanf("%lf", &x);
     Push(CPU_code->stk, x);
     CPU_code->ip++;
@@ -271,4 +268,13 @@ void Call_CMD(CodeCPU* CPU_code)
 void Ret_CMD(CodeCPU* CPU_code)
 {
     CPU_code->ip = (size_t)Pop(CPU_code->ret_stk);
+}
+
+void Graph_CMD(CodeCPU* CPU_code)
+{
+    for (size_t i = 0; i < SIZE_RAM; i++)
+    {
+        putchar((char)CPU_code->ram[i]);
+    }
+    CPU_code->ip++;
 }
