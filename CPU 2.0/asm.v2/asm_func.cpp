@@ -625,9 +625,17 @@ size_t ScanMem(const char* sval)
 
 double ScanVal(const char* sval)
 {
-    double val = 0;
+    int minus = 1;
+    if (sval[0] == '-')
+    {
+        minus = -1;
+        sval += 1;
+    }
+
     size_t len = strlen(sval);
     size_t raz = len;
+    double val = 0;
+    
     for (size_t index = 0; index < len; index++)
     {
         if (sval[index] >= '0' && sval[index] <= '9')
@@ -640,7 +648,7 @@ double ScanVal(const char* sval)
         else return POISON_VAL;
     }
     val = val / (pow(10, len - raz));
-    return val;
+    return val * minus;
 }
 
 size_t IsReg(const char* reg)

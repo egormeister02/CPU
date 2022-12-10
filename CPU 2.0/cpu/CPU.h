@@ -17,13 +17,14 @@ if (!(condition)){                                                \
            #condition, __FILE__, __LINE__, __PRETTY_FUNCTION__);  \
     abort();}
 
-const char   SOFT_CPU_FILE[]   =   "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
-const int    CPU_SIGNATURE     =           0xBD;
-const int    CPU_VERSION       =              1;
-const size_t MAX_CODE_CMD      =             19;
-const size_t SIZE_RAM          =          10000;       
-const size_t SIZE_REG          =             16;
-const double EPSILA            =          10e-8;
+const char   SOFT_CPU_FILE[]   = "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
+const int    CPU_SIGNATURE     =              0xBD;
+const int    CPU_VERSION       =                 1;
+const size_t MAX_CODE_CMD      =                19;
+const size_t GR_RESOL          =                100;
+const size_t SIZE_RAM          = GR_RESOL*GR_RESOL;       
+const size_t SIZE_REG          =                16;
+const double EPSILA            =             10e-8;
 
 struct CodeCPU
 {

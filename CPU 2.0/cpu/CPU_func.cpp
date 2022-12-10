@@ -56,7 +56,7 @@ void DoProgram(CodeCPU* CPU_code)
     CPU_code->stk     = &stk1;
     CPU_code->ret_stk = &stk2;
 
-    size_t cmd                =                                0;
+    size_t cmd                =                            0;
     void(**command)(CodeCPU*) = CreateArrayCmd(MAX_CODE_CMD);
 
     while (CPU_code->ip < CPU_code->nCmd)
@@ -129,8 +129,9 @@ void Push_CMD(CodeCPU* CPU_code)
         val = CPU_code->ram[memid];
     }
     else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
+    {
         val = (double)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
-    
+    }
     else
         val = *(double*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
 
@@ -272,9 +273,13 @@ void Ret_CMD(CodeCPU* CPU_code)
 
 void Graph_CMD(CodeCPU* CPU_code)
 {
-    for (size_t i = 0; i < SIZE_RAM; i++)
+    for (size_t i = 0; i < GR_RESOL; i++)
     {
-        putchar((char)CPU_code->ram[i]);
+        for (size_t j = 0; j < GR_RESOL; j++)
+        {
+            putchar((char)CPU_code->ram[i*GR_RESOL + j]);
+        }
+        putchar(10);
     }
     CPU_code->ip++;
 }
