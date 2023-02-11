@@ -22,11 +22,11 @@
     StackDumpFunc(Stack, #Stack, __FILE__, __LINE__, __PRETTY_FUNCTION__, StackCheckFunc(Stack, #Stack, __FILE__, __LINE__, __PRETTY_FUNCTION__))
 
 #define PrintInfo(error)                                            \
-    fprintf(stdout, "Error in: %s%s\n"                              \   
+    fprintf(stdout, "Error in: %s%s\n"                              \
                         "FILE: %s\n"                                \
                         "LINE: %d\n"                                \
                         "FUNCTION: %s\n"                            \
-                        "StackDump!!!\n",                           \ 
+                        "StackDump!!!\n",                           \
                 name, error, file, line, func);                            
 
 extern FILE* LogStack;

@@ -268,9 +268,9 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
 
     for (size_t index = 0; index < assm->nTok; index++)
     {   
-        codetok = (int)(assm->Toks[index].type == JMP ? assm->Toks[index].jtype :
-                        assm->Toks[index].type == JML ? ip*16 + 16 :
-                        assm->Toks[index].type);
+        codetok = (assm->Toks[index].type == JMP ? (int)assm->Toks[index].jtype :
+                   assm->Toks[index].type == JML ? (int)(ip*16 + 16) :
+                   (int)assm->Toks[index].type);
         mem = 0;
         reg = 0;
         dec = 2;
