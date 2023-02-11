@@ -18,25 +18,26 @@ if (!(condition)){                                                \
     abort();}
 
 const char   SOFT_CPU_FILE[]   = "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
+
 const int    CPU_SIGNATURE     =              0xBD;
 const int    CPU_VERSION       =                 1;
 const size_t MAX_CODE_CMD      =                19;
-const size_t GR_RESOL          =                100;
+const size_t GR_RESOL          =               100;
 const size_t SIZE_RAM          = GR_RESOL*GR_RESOL;       
 const size_t SIZE_REG          =                16;
 const double EPSILA            =             10e-8;
 
 struct CodeCPU
 {
-    int     signature  =        0;
-    int     version    =        0;
-    size_t  nCmd       =        0;
-    size_t  ip         =        0;
-    void*   bin_buf    =     NULL;
-    double* ram        =     NULL;
-    double  reg[SIZE_REG] =    {};
-    stk*    ret_stk    =     NULL;
-    stk*    stk        =     NULL;
+    int     signature     =        0;
+    int     version       =        0;
+    size_t  nCmd          =        0;
+    size_t  ip            =        0;
+    void*   bin_buf       =     NULL;
+    double* ram           =     NULL;
+    double  reg[SIZE_REG] =       {};
+    stk*    ret_stk       =     NULL;
+    stk*    stk           =     NULL;
 };
 
 void ReadHead(CodeCPU*, FILE*);

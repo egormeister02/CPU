@@ -27,18 +27,18 @@ const unsigned char MAX_TYPE_TOK = 19;
 enum typetok
 {
     PUSH = CMD_PUSH,
-    ADD  = CMD_ADD,
-    SUB  = CMD_SUB,
-    MUL  = CMD_MUL,
-    DIV  = CMD_DIV,
-    IN   = CMD_IN,
-    POP  = CMD_POP,
-    OUT  = CMD_OUT,
-    HLT  = CMD_HLT,
-    JMP  = CMD_JMP,
+    ADD  =  CMD_ADD,
+    SUB  =  CMD_SUB,
+    MUL  =  CMD_MUL,
+    DIV  =  CMD_DIV,
+    IN   =   CMD_IN,
+    POP  =  CMD_POP,
+    OUT  =  CMD_OUT,
+    HLT  =  CMD_HLT,
+    JMP  =  CMD_JMP,
     CALL = CMD_CALL,
-    RET  = CMD_RET,
-    GRA  = CMD_GRA,
+    RET  =  CMD_RET,
+    GRA  =  CMD_GRA,
 
     NUM  = MAX_TYPE_TOK + 1,
     MEM  = MAX_TYPE_TOK + 2,
@@ -61,14 +61,14 @@ enum typejump
 
 enum err
 {
-    ok,
-    mem,
-    tok,
+    ok      ,
+    mem     ,
+    tok     ,
     push_arg,
-    pop_arg,
-    jmp_arg,
+    pop_arg ,
+    jmp_arg ,
     call_arg,
-    arg_cmd,
+    arg_cmd ,
     jmp_link
 };
 
@@ -78,8 +78,8 @@ struct Token
     size_t   line    =    0;   
     size_t   dval    =    0;
     double   val     =    0;
-    typetok  type;
-    typejump jtype;
+    typetok  type          ;
+    typejump jtype         ;
     err      error   =   ok;
 };
 
@@ -148,6 +148,8 @@ double ScanVal(const char*);
 size_t IsReg(const char*);
 
 size_t IsMrg(const char*);
+
+size_t IsMemExp(const char*);
 
 FILE* StartList(void);
 

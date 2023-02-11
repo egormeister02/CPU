@@ -16,8 +16,6 @@ void CreateAsm(asmtok* assm, FILE* file)
     ASSERT(assm->buf != NULL);
 
     assm->size = fread(assm->buf, sizeof(char), size, file);
-    assm->Toks = (Token*)calloc(size / 3, sizeof(Token));
-    ASSERT(assm->Toks != NULL);
 
     size_t* lines = (size_t*)calloc(assm->size, sizeof(size_t));
     ASSERT(lines != NULL);
@@ -28,6 +26,9 @@ void CreateAsm(asmtok* assm, FILE* file)
         if (assm->buf[index] == '\n')
             lines[nlines++] = index;
     }
+
+    assm->Toks = (Token*)calloc(nlines * 2, sizeof(Token));
+    ASSERT(assm->Toks != NULL);
 
     size_t tokcount = 0;
     size_t line = 1;
@@ -58,7 +59,13 @@ void CreateToks(asmtok* assm)
         if (IsMrg(assm->Toks[index].str))
         {
             assm->Toks[index].type = MRG;
-            assm->Toks[index].dval = IsMrg(assm->Toks[index].str) - 1;
+            assm->Toks[index].dval = IsMrg(assm->Toks[index].str);
+        }
+
+        else if (IsMemExp(assm->Toks[index].str))
+        {
+            assm->Toks[index].type = MRG;
+            assm->Toks[index].dval = IsMemExp(assm->Toks[index].str);
         }
 
         else if (IsMem(assm->Toks[index].str))
@@ -80,7 +87,7 @@ void CreateToks(asmtok* assm)
         else if (IsReg(assm->Toks[index].str))
         {
             assm->Toks[index].type = REG;
-            assm->Toks[index].dval = IsReg(assm->Toks[index].str) - 1;
+            assm->Toks[index].dval = IsReg(assm->Toks[index].str);
         }
 
         else if (IsJmpArg(assm->Toks[index].str))
@@ -236,7 +243,7 @@ void CodeCPUCtor(const asmtok* assm, CodeCPU* CPU_code)
 
 void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
 {
-    ASSERT(assm != NULL);
+    ASSERT(assm     != NULL);
     ASSERT(CPU_code != NULL);
 
     CodeCPUCtor(assm, CPU_code);
@@ -269,7 +276,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
         dec = 2;
         val = 0;
 
-        fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-9d  |  %d  |  %d  | %5llu  |  ",
+        fprintf(ListFile, "   %04llu   |  %3llu   |   %-8s |  %-9d  |  %d  |  %d  | %5llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, codetok, mem, reg, ip*16 + 16);
 
         switch (assm->Toks[index].type)
@@ -288,7 +295,19 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 mem = 1;
                 reg = 1;
                 dec = 0;
-                val = (double)assm->Toks[index].dval;
+                if (*((char*)&assm->Toks[index].dval + 1) != 0)
+                {
+                    double add = abs(*((char*)&assm->Toks[index].dval + 1));
+                    while (add >= 1)
+                    {
+                        add /= 10;
+                        dec++;
+                    }
+                    val = *((char*)&assm->Toks[index].dval) + add;
+                }
+                else
+                    val = (double)assm->Toks[index].dval;
+
                 break;
 
             case MEM:
@@ -320,7 +339,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 break;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  | %5llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-8s |  %-10.*lf |  %d  |  %d  | %5llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
             PrintErr(assm->Toks[index].error);
 
@@ -343,7 +362,18 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 mem = 1;
                 reg = 1;
                 dec = 0;
-                val = (double)assm->Toks[index].dval;
+                if (*((char*)&assm->Toks[index].dval + 1) != 0)
+                {
+                    double add = abs(*((char*)&assm->Toks[index].dval + 1));
+                    while (add >= 1)
+                    {
+                        add /= 10;
+                        dec++;
+                    }
+                    val = *((char*)&assm->Toks[index].dval) + add;
+                }
+                else
+                    val = (double)assm->Toks[index].dval;
                 break;
 
             case MEM:
@@ -377,7 +407,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 break;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  %-10.*lf |  %d  |  %d  | %5llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-8s |  %-10.*lf |  %d  |  %d  | %5llu  |  ",
                             index, assm->Toks[index].line, assm->Toks[index].str, dec,  val, mem, reg, ip*16 + 24);
             PrintErr(assm->Toks[index].error);
 
@@ -408,7 +438,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 CPU_code->error++;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  | %5llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-8s |  ---------  |  %d  |  %d  | %5llu  |  ",
                               index, assm->Toks[index].line, assm->Toks[index].str, mem, reg, ip*16 + 8);
             PrintErr(assm->Toks[index].error);
             ip++;
@@ -438,7 +468,7 @@ void CreateCPUbuf(const asmtok* assm, CodeCPU* CPU_code)
                 CPU_code->error++;
             }
 
-            fprintf(ListFile, "   %04llu   |  %3llu   |   %-7s |  ---------  |  %d  |  %d  | %5llu  |  ",
+            fprintf(ListFile, "   %04llu   |  %3llu   |   %-8s |  ---------  |  %d  |  %d  | %5llu  |  ",
                               index, assm->Toks[index].line, assm->Toks[index].str, mem, reg, ip*16 + 8);
             PrintErr(assm->Toks[index].error);
             ip++;
@@ -663,20 +693,59 @@ size_t IsReg(const char* reg)
 
 size_t IsMrg(const char* sval)
 {
+    size_t result = 0;
     if ((sval[0] == '[') && (sval[strlen(sval) - 1] == ']'))
     {
         if (strlen(sval) == 5 && sval[1] == 'R' && sval[3] == 'X' && sval[2] >= 'A' && sval[2] <= (char)('A' + SIZE_REG - 1))
-        return sval[2] - 'A' + 1;
+        {
+            *(char*)&result = sval[2] - 'A' + 1;
+        }
+        return result;
     }
 
     return 0;
+}
+
+size_t IsMemExp(const char* sval)
+{
+    char   vals[3]  = {};
+    char   val      =  0;
+    char   arg      =  0;
+    char   add      =  0;
+    size_t result   =  0;
+
+    if (IsMem(sval) && (strlen(sval) > 5) && (sval[1] == 'R' && sval[3] == 'X' && sval[2] >= 'A' && sval[2] <= (char)('A' + SIZE_REG - 1)))
+    {
+        arg = sval[2] - 'A' + 1;
+
+        for (size_t i = 5; i < strlen(sval) - 1; i++)
+            vals[i-5] = sval[i];
+
+        if ((size_t)ScanVal(vals) != POISON_VAL)
+        {
+            val = (char)ScanVal(vals);
+            if (sval[4] == '-')
+                add = val * (-1);
+
+            else if (sval[4] == '+')
+                add = val;
+
+            else return 0;
+        }
+        else return 0;
+
+        *(char*)&result = arg;
+        *((char*)&result + 1) = add;
+        return result;
+    }
+    else return 0;
 }
 
 FILE* StartList(void)
 {
     ListFile = fopen(LIST_FILE, "w");
     fprintf(ListFile, "-------------------------------Start_Listing-------------------------------\n\n");
-    fprintf(ListFile, "  NumTok  |  Line  |  String   |  code/val   | MEM | REG |   pos  |  comment  \n");
+    fprintf(ListFile, "  NumTok  |  Line  |  String    |  code/val   | MEM | REG |   pos  |  comment  \n");
     return ListFile;
 }
 

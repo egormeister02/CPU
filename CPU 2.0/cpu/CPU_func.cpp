@@ -49,10 +49,10 @@ void DoProgram(CodeCPU* CPU_code)
     ASSERT(CPU_code != NULL);
     if (!CPU_code->nCmd) return;
 
-    stk stk1      =    {};
-    stk stk2      =    {};
-    StackCtor(&stk1, 0);
-    StackCtor(&stk2, 0);
+    stk stk1          =    {};
+    stk stk2          =    {};
+    StackCtor(&stk1, 0)      ;
+    StackCtor(&stk2, 0)      ;
     CPU_code->stk     = &stk1;
     CPU_code->ret_stk = &stk2;
 
@@ -63,6 +63,7 @@ void DoProgram(CodeCPU* CPU_code)
     {
         cmd = (size_t)(*CMD_BYIT(CPU_code->bin_buf, CPU_code->ip));
         command[cmd](CPU_code);
+        //printf("%d\n", CPU_code->ip);
     }
 
     printf("\nend of process");
@@ -122,7 +123,19 @@ void Push_CMD(CodeCPU* CPU_code)
     if (*MEM_BYIT(CPU_code->bin_buf, CPU_code->ip))
     {
         if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
-            memid = (size_t)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+        {
+            size_t arg = (size_t)*(char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) - 1;
+            char add = *((char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) + 1);
+            if (int(arg + add) < 0)
+            {
+                printf("\n!_exetuation error_! \n\tin Push_CMD(): memory index < 0 \n\texecuted: Push 0");
+                Push(CPU_code->stk, 0);
+                CPU_code->ip++;
+                return;
+            }
+            else 
+                memid = (size_t)CPU_code->reg[arg] + add;
+        }
         else
             memid = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
 
@@ -130,7 +143,7 @@ void Push_CMD(CodeCPU* CPU_code)
     }
     else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
     {
-        val = (double)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+        val = (double)CPU_code->reg[*(char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) - 1];
     }
     else
         val = *(double*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
@@ -171,7 +184,19 @@ void Pop_CMD(CodeCPU* CPU_code)
         if (*MEM_BYIT(CPU_code->bin_buf, CPU_code->ip))
         {
             if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
-                memid = (size_t)CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)];
+            {
+                size_t arg = (size_t)*(char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) - 1;
+                char add = *((char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) + 1);
+                if (int(arg + add) < 0)
+                {
+                    printf("\n!_exetuation error_! \n\tin Push_CMD(): memory index < 0 \n\texecuted: Pop");
+                    Pop(CPU_code->stk);
+                    CPU_code->ip++;
+                    return;
+                }
+                else 
+                    memid = (size_t)CPU_code->reg[arg] + add;
+            }
             else
                 memid = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
 
@@ -179,7 +204,7 @@ void Pop_CMD(CodeCPU* CPU_code)
         }
         else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
         {
-             CPU_code->reg[*(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip)] = Pop(CPU_code->stk);
+             CPU_code->reg[*(char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) - 1] = Pop(CPU_code->stk);
         }          
     }
     else 
@@ -273,13 +298,15 @@ void Ret_CMD(CodeCPU* CPU_code)
 
 void Graph_CMD(CodeCPU* CPU_code)
 {
+    char* imag = (char*)calloc(SIZE_RAM + GR_RESOL, sizeof(char));
     for (size_t i = 0; i < GR_RESOL; i++)
     {
         for (size_t j = 0; j < GR_RESOL; j++)
         {
-            putchar((char)CPU_code->ram[i*GR_RESOL + j]);
+            imag[i*(GR_RESOL + 1) + j] = (char)CPU_code->ram[i*GR_RESOL + j];
         }
-        putchar(10);
+        imag[(i + 1)*(GR_RESOL + 1) - 1] = '\n';
     }
+    puts(imag);
     CPU_code->ip++;
 }

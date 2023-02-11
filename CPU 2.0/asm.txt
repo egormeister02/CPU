@@ -6,6 +6,7 @@ pop RBX
 push 50
 pop RCX
 
+
 1:
 
 push RBX
@@ -32,7 +33,7 @@ pop RBX
 
 push RBX
 push 50
-jbe :4
+jbe :new_str
 
 5:
 push RAX
@@ -46,13 +47,12 @@ jb :1
 graph
 hlt
 
-
 pusto:
 push 32
 pop [RAX]
 jmp :2
 
-4:
+new_str:
 push -50
 pop RBX
 push -1
