@@ -17,7 +17,7 @@ if (!(condition)){                                                \
            #condition, __FILE__, __LINE__, __PRETTY_FUNCTION__);  \
     abort();}
 
-const char   SOFT_CPU_FILE[]   = "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
+const char   SOFT_CPU_FILE[]   = "/home/egor/VS_projects/CPU 2.0/a.code.bin";
 
 const int    CPU_SIGNATURE     =              0xBD;
 const int    CPU_VERSION       =                 1;
@@ -37,7 +37,7 @@ struct CodeCPU
     double* ram           =     NULL;
     double  reg[SIZE_REG] =       {};
     stk*    ret_stk       =     NULL;
-    stk*    stk           =     NULL;
+    stk*    stack           =     NULL;
 };
 
 void ReadHead(CodeCPU*, FILE*);

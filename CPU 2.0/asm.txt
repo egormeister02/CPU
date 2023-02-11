@@ -6,7 +6,6 @@ pop RBX
 push 50
 pop RCX
 
-
 1:
 
 push RBX
@@ -21,7 +20,7 @@ add
 push 2200
 jae :pusto
 
-push 1
+push 65
 pop [RAX]
 
 2:

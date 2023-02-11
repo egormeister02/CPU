@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define CANNARY_GUARD 1
-#define HASH_GUARD    1
+#define CANNARY_GUARD 0
+#define HASH_GUARD    0
 
 #if CANNARY_GUARD
 

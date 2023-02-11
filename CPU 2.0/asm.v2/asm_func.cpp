@@ -107,111 +107,111 @@ void CreateToks(asmtok* assm)
             assm->Toks[index].val = ScanVal(assm->Toks[index].str);
         }
 
-        else if (stricmp(assm->Toks[index].str, "push") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "push") == 0)
         {
             assm->Toks[index].type = PUSH;
         }
 
-        else if (stricmp(assm->Toks[index].str, "pop") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "pop") == 0)
         {
             assm->Toks[index].type = POP;
         }
 
-        else if (stricmp(assm->Toks[index].str, "add") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "add") == 0)
         {
             assm->Toks[index].type = ADD;
         }
 
-        else if (stricmp(assm->Toks[index].str, "sub") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "sub") == 0)
         {
             assm->Toks[index].type = SUB;
         }
 
-        else if (stricmp(assm->Toks[index].str, "mul") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "mul") == 0)
         {
             assm->Toks[index].type = MUL;
         }
 
-        else if (stricmp(assm->Toks[index].str, "div") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "div") == 0)
         {
             assm->Toks[index].type = DIV;
         }
 
-        else if (stricmp(assm->Toks[index].str, "in") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "in") == 0)
         {
             assm->Toks[index].type = IN;
         }
 
-        else if (stricmp(assm->Toks[index].str, "out") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "out") == 0)
         {
             assm->Toks[index].type = OUT;
         }
 
-        else if (stricmp(assm->Toks[index].str, "ret") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "ret") == 0)
         {
             assm->Toks[index].type = RET;
         }
 
-        else if (stricmp(assm->Toks[index].str, "graph") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "graph") == 0)
         {
             assm->Toks[index].type = GRA;
         }
 
-        else if (stricmp(assm->Toks[index].str, "hlt") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "hlt") == 0)
         {
             assm->Toks[index].type = HLT;
         }
 
-        else if (stricmp(assm->Toks[index].str, "jmp") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "jmp") == 0)
         {
             assm->Toks[index].type  =  JMP;
             assm->Toks[index].jtype =  JUN;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "jb") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "jb") == 0)
         {
             assm->Toks[index].type  = JMP;
             assm->Toks[index].jtype =  JB;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "ja") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "ja") == 0)
         { 
             assm->Toks[index].type  = JMP;
             assm->Toks[index].jtype =  JA;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "jbe") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "jbe") == 0)
         {
             assm->Toks[index].type  =  JMP;
             assm->Toks[index].jtype =  JBE;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "jae") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "jae") == 0)
         {
             assm->Toks[index].type  =  JMP;
             assm->Toks[index].jtype =  JAE;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "jee") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "jee") == 0)
         {
             assm->Toks[index].type  =  JMP;
             assm->Toks[index].jtype =  JEE;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "jne") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "jne") == 0)
         {
             assm->Toks[index].type  =  JMP;
             assm->Toks[index].jtype =  JNE;
             assm->nJmp++;
         }
 
-        else if (stricmp(assm->Toks[index].str, "call") == 0)
+        else if (strcasecmp(assm->Toks[index].str, "call") == 0)
         {
             assm->Toks[index].type =  CALL;
             assm->nJmp++;

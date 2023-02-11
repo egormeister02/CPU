@@ -1,9 +1,13 @@
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "config_cmd.h"
+#ifdef __STRICT_ANSI__
+#undef __STRICT_ANSI__
+#endif
 
 #define ASSERT(condition)                                         \
 if (!(condition)){                                                \
@@ -113,9 +117,9 @@ struct jump
 
 extern FILE* ListFile;
 
-const char   ASSM_FILE[]       =      "D:\\VScode_projects\\CPU 2.0\\asm.txt";
-const char   SOFT_CPU_FILE[]   =   "D:\\VScode_projects\\CPU 2.0\\a.code.bin";
-const char   LIST_FILE[]       =  "D:\\VScode_projects\\CPU 2.0\\listing.txt";
+const char   ASSM_FILE[]       =      "/home/egor/VS_projects/CPU 2.0/asm.txt";
+const char   SOFT_CPU_FILE[]   =   "/home/egor/VS_projects/CPU 2.0/a.code.bin";
+const char   LIST_FILE[]       =  "/home/egor/VS_projects/CPU 2.0/listing.txt";
 const int    CPU_SIGNATURE     =           0xBD;
 const int    CPU_VERSION       =              1;
 const size_t SIZE_RAM          =            128;       

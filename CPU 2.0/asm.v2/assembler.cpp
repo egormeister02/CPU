@@ -3,7 +3,7 @@
 
 int main()
 {
-    
+   
     struct asmtok    assm = {};
     struct CodeCPU CPU_code  = {};
 
@@ -24,4 +24,4 @@ int main()
     fclose(codefile);
 
     return 0;
-}
+} 

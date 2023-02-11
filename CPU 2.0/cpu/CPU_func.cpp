@@ -53,7 +53,7 @@ void DoProgram(CodeCPU* CPU_code)
     stk stk2          =    {};
     StackCtor(&stk1, 0)      ;
     StackCtor(&stk2, 0)      ;
-    CPU_code->stk     = &stk1;
+    CPU_code->stack     = &stk1;
     CPU_code->ret_stk = &stk2;
 
     size_t cmd                =                            0;
@@ -76,7 +76,7 @@ void DtorCPU(CodeCPU* CPU_code)
 {
     ASSERT(CPU_code != NULL);
 
-    StackDtor(CPU_code->stk);
+    StackDtor(CPU_code->stack);
     free(CPU_code->bin_buf);
     free(CPU_code->ram);
 
@@ -86,7 +86,7 @@ void DtorCPU(CodeCPU* CPU_code)
     CPU_code->ip         =        0;
     CPU_code->bin_buf    =     NULL;
     CPU_code->ram        =     NULL;
-    CPU_code->stk        =     NULL;
+    CPU_code->stack        =     NULL;
 }
 
 void(**CreateArrayCmd(size_t number_cmd))(CodeCPU*) 
@@ -129,7 +129,7 @@ void Push_CMD(CodeCPU* CPU_code)
             if (int(arg + add) < 0)
             {
                 printf("\n!_exetuation error_! \n\tin Push_CMD(): memory index < 0 \n\texecuted: Push 0");
-                Push(CPU_code->stk, 0);
+                Push(CPU_code->stack, 0);
                 CPU_code->ip++;
                 return;
             }
@@ -148,31 +148,31 @@ void Push_CMD(CodeCPU* CPU_code)
     else
         val = *(double*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
 
-    Push(CPU_code->stk, val);
+    Push(CPU_code->stack, val);
     CPU_code->ip++;
 }
 
 void Add_CMD(CodeCPU* CPU_code)
 {
-    Push(CPU_code->stk, Pop(CPU_code->stk) + Pop(CPU_code->stk));
+    Push(CPU_code->stack, Pop(CPU_code->stack) + Pop(CPU_code->stack));
     CPU_code->ip++;
 }
 
 void Sub_CMD(CodeCPU* CPU_code)
 {
-    Push(CPU_code->stk, Pop(CPU_code->stk) - Pop(CPU_code->stk));
+    Push(CPU_code->stack, Pop(CPU_code->stack) - Pop(CPU_code->stack));
     CPU_code->ip++;
 }
 
 void Mul_CMD(CodeCPU* CPU_code)
 {
-    Push(CPU_code->stk, Pop(CPU_code->stk) * Pop(CPU_code->stk));
+    Push(CPU_code->stack, Pop(CPU_code->stack) * Pop(CPU_code->stack));
     CPU_code->ip++;
 }
 
 void Div_CMD(CodeCPU* CPU_code)
 {
-    Push(CPU_code->stk, Pop(CPU_code->stk) / Pop(CPU_code->stk));
+    Push(CPU_code->stack, Pop(CPU_code->stack) / Pop(CPU_code->stack));
     CPU_code->ip++;
 }
 
@@ -190,7 +190,7 @@ void Pop_CMD(CodeCPU* CPU_code)
                 if (int(arg + add) < 0)
                 {
                     printf("\n!_exetuation error_! \n\tin Push_CMD(): memory index < 0 \n\texecuted: Pop");
-                    Pop(CPU_code->stk);
+                    Pop(CPU_code->stack);
                     CPU_code->ip++;
                     return;
                 }
@@ -200,15 +200,15 @@ void Pop_CMD(CodeCPU* CPU_code)
             else
                 memid = *(size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip);
 
-            CPU_code->ram[memid] = Pop(CPU_code->stk);
+            CPU_code->ram[memid] = Pop(CPU_code->stack);
         }
         else if (*REG_BYIT(CPU_code->bin_buf, CPU_code->ip))
         {
-             CPU_code->reg[*(char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) - 1] = Pop(CPU_code->stk);
+             CPU_code->reg[*(char*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip) - 1] = Pop(CPU_code->stack);
         }          
     }
     else 
-        Pop(CPU_code->stk);
+        Pop(CPU_code->stack);
     CPU_code->ip++;
 }
 
@@ -217,13 +217,13 @@ void In_CMD(CodeCPU* CPU_code)
     double x = 0;
     printf("\nenter the number\n");
     scanf("%lf", &x);
-    Push(CPU_code->stk, x);
+    Push(CPU_code->stack, x);
     CPU_code->ip++;
 }
 
 void Out_CMD(CodeCPU* CPU_code)
 {
-    printf("%lf\n", Pop(CPU_code->stk));
+    printf("%lf\n", Pop(CPU_code->stack));
     CPU_code->ip++;
 }
 
@@ -239,7 +239,7 @@ void Jmp_CMD(CodeCPU* CPU_code)
 
 void Jb_CMD(CodeCPU* CPU_code)
 {
-    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) < EPSILA)
+    if (Pop(CPU_code->stack) - Pop(CPU_code->stack) < EPSILA)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
@@ -247,7 +247,7 @@ void Jb_CMD(CodeCPU* CPU_code)
 
 void Ja_CMD(CodeCPU* CPU_code)
 {
-    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) > EPSILA)
+    if (Pop(CPU_code->stack) - Pop(CPU_code->stack) > EPSILA)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
@@ -255,7 +255,7 @@ void Ja_CMD(CodeCPU* CPU_code)
 
 void Jbe_CMD(CodeCPU* CPU_code)
 {
-    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) < EPSILA)
+    if (Pop(CPU_code->stack) - Pop(CPU_code->stack) < EPSILA)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
@@ -263,7 +263,7 @@ void Jbe_CMD(CodeCPU* CPU_code)
 
 void Jae_CMD(CodeCPU* CPU_code)
 {
-    if (Pop(CPU_code->stk) - Pop(CPU_code->stk) > -EPSILA)
+    if (Pop(CPU_code->stack) - Pop(CPU_code->stack) > -EPSILA)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
@@ -271,7 +271,7 @@ void Jae_CMD(CodeCPU* CPU_code)
 
 void Jee_CMD(CodeCPU* CPU_code)
 {
-    if (abs(Pop(CPU_code->stk) - Pop(CPU_code->stk)) < EPSILA)
+    if (abs(Pop(CPU_code->stack) - Pop(CPU_code->stack)) < EPSILA)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
@@ -279,7 +279,7 @@ void Jee_CMD(CodeCPU* CPU_code)
 
 void Jne_CMD(CodeCPU* CPU_code)
 {
-    if (abs(Pop(CPU_code->stk) - Pop(CPU_code->stk)) < EPSILA)
+    if (abs(Pop(CPU_code->stack) - Pop(CPU_code->stack)) < EPSILA)
         CPU_code->ip = *((size_t*)VAL_BYIT(CPU_code->bin_buf, CPU_code->ip));
     else
         CPU_code->ip++;
