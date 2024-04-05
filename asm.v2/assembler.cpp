@@ -1,9 +1,9 @@
-#include<conio.h>
+//#include<conio.h>
 #include "asm.h"
 
 int main()
 {
-    
+   
     struct asmtok    assm = {};
     struct CodeCPU CPU_code  = {};
 
@@ -18,10 +18,10 @@ int main()
 
     WriteCodeFile(&CPU_code, codefile);
 
-    printf("OK\n");
+    printf("\nERRORS: %d\n", CPU_code.error);
     
     fclose(source);
     fclose(codefile);
-    //DtorText(&assm_text);
+
     return 0;
-}
+} 
