@@ -14,6 +14,12 @@ int main(int argc, char *argv[])
 
     FILE* codefile = fopen(code_filename, "r+b");
 
+    if (codefile == nullptr)
+    {
+        printf("Error: file does not exist\n");
+        return 1;
+    }
+
     struct CodeCPU CPU_code = {};
 
     CreateCPU(&CPU_code, codefile);

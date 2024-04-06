@@ -1,0 +1,42 @@
+in     
+pop RAX
+call :fac
+push RAX
+out
+hlt
+
+fac:
+    push RAX
+
+    push RAX
+    push 1
+    jee :end
+
+    push RAX
+    push -1
+    jee :end
+
+    push RAX
+    push 0
+    jbe :1
+
+    push -1
+    push RAX
+    mul
+    pop RAX
+
+    1:
+        push 1
+        push RAX
+        sub
+        pop RAX 
+        push RAX
+        mul
+        push RAX
+        push 2
+        jb :1
+
+    end:
+    pop RAX
+    
+ret   

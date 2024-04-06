@@ -24,8 +24,9 @@ int main(int argc, char *argv[])
     struct CodeCPU CPU_code  = {};
 
     FILE* source = fopen(assm_filename, "r");
-    FILE* codefile = fopen(code_filename, "w+b");
     ASSERT(source != NULL);
+
+    FILE* codefile = fopen(code_filename, "w+b");
     ASSERT(codefile != NULL);
 
     CreateAsm(&assm, source);
