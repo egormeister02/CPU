@@ -31,7 +31,7 @@
 
 extern FILE* LogStack;
 
-const char NAME_LOG_FILE[] = "LogStack.txt";
+const char NAME_LOG_FILE[] = "../logs/LogStack.txt";
 const size_t CANNARY           = 0xFCECCACF;
 
 #define POISON POISON_DOUBLE

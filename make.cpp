@@ -2,6 +2,6 @@
 
 int main()
 {
-    system("./asm.v2/asm.exe");
-    system("./cpu/CPU.exe");
+    system("./bin/asm");
+    system("./bin/cpu");
 }

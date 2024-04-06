@@ -3,6 +3,17 @@
 
 FILE* ListFile = StartList();
 
+void MakeCodeFileName(const char* assm_filename, char* code_filename)
+{
+    size_t assm_name_len = strlen(assm_filename);
+
+    // Копируем имя входного файла в выходной файл
+    strncpy(code_filename, assm_filename, assm_name_len);
+
+    // Добавляем расширение ".out" к имени выходного файла
+    strncpy(code_filename + assm_name_len - 4, ".code\0", 6);
+}
+
 void CreateAsm(asmtok* assm, FILE* file)
 {
     ASSERT(assm != NULL);

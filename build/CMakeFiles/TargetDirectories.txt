@@ -1,0 +1,5 @@
+/home/egor/Projects/CPU/build/CMakeFiles/MyStack.dir
+/home/egor/Projects/CPU/build/CMakeFiles/cpu.dir
+/home/egor/Projects/CPU/build/CMakeFiles/asm.dir
+/home/egor/Projects/CPU/build/CMakeFiles/edit_cache.dir
+/home/egor/Projects/CPU/build/CMakeFiles/rebuild_cache.dir
