@@ -1,4 +1,4 @@
-mkdir -p build bin
+mkdir -p build bin logs
 cd build
 cmake ..
 make
