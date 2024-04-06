@@ -1,8 +1,8 @@
-push 0
-pop RAX
+push 0    
+pop RAX   
 
 push -50
-pop RBX
+pop RBX 
 push 50
 pop RCX
 
