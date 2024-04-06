@@ -1,5 +1,4 @@
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -124,10 +123,6 @@ const size_t SIZE_RAM          =                    128;
 const size_t SIZE_REG          =                     16;
          
 const size_t POISON_VAL        =             0xFDEFFEDF;
-
-int FileNameVerify(const char*);
-
-void MakeCodeFileName(const char*, char*);
 
 void CreateAsm(asmtok*, FILE*);
 

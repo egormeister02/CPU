@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include <math.h> 
 #include "Stack.h"
+#include "filename.h"
 #include "config_cmd.h"
 
 #define CMD_BYIT(buf, index) (char*)((char*)buf + (index * 16) + 7)

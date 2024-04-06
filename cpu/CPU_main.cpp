@@ -9,7 +9,9 @@ int main(int argc, char *argv[])
     }
 
     char* code_filename = argv[1];
-    
+
+    if (FileNameVerify(code_filename, ".code")) return 1;
+
     FILE* codefile = fopen(code_filename, "r+b");
 
     struct CodeCPU CPU_code = {};

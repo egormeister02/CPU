@@ -1,5 +1,5 @@
-//#include<conio.h>
-#include "asm.h"
+#include <stdlib.h> 
+#include <stdio.h>
 #include "filename.h"
 
 int main(int argc, char *argv[]) 
@@ -20,26 +20,12 @@ int main(int argc, char *argv[])
 
     MakeCodeFileName(assm_filename, code_filename);
 
-    struct asmtok    assm = {};
-    struct CodeCPU CPU_code  = {};
+    char command_asm[100] = "./asm ";
+    char command_cpu[100] = "./cpu ";
 
-    FILE* source = fopen(assm_filename, "r");
-    FILE* codefile = fopen(code_filename, "w+b");
-    ASSERT(source != NULL);
-    ASSERT(codefile != NULL);
+    strcpy(command_asm + 6, assm_filename);
+    strcpy(command_cpu + 6, code_filename);
 
-    CreateAsm(&assm, source);
-
-    CreateCPUbuf(&assm, &CPU_code);
-
-    WriteCodeFile(&CPU_code, codefile);
-
-    if (CPU_code.error)
-        printf("\nERRORS: %d\n", CPU_code.error);
-    
-    fclose(source);
-    fclose(codefile);
-
-    return 0;
-} 
-
+    system(command_asm);
+    system(command_cpu);
+}
