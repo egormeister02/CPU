@@ -125,7 +125,9 @@ const size_t SIZE_REG          =                     16;
          
 const size_t POISON_VAL        =             0xFDEFFEDF;
 
-void MakeCodeFileName(const char* assm_filename, char* code_filename);
+int FileNameVerify(const char*);
+
+void MakeCodeFileName(const char*, char*);
 
 void CreateAsm(asmtok*, FILE*);
 

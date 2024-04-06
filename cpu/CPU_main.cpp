@@ -1,8 +1,16 @@
 #include "CPU.h"
 
-int main()
+int main(int argc, char *argv[]) 
 {
-    FILE* codefile = fopen(SOFT_CPU_FILE, "r+b");
+    // Проверка наличия аргумента командной строки (имени входного файла)
+    if (argc != 2) {
+        printf("Use: %s <input_file>\n", argv[0]);
+        return 1;
+    }
+
+    char* code_filename = argv[1];
+    
+    FILE* codefile = fopen(code_filename, "r+b");
 
     struct CodeCPU CPU_code = {};
 

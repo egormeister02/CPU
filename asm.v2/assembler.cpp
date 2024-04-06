@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
 
     size_t assm_name_len = strlen(assm_filename);
 
+    if (FileNameVerify(assm_filename)) return 1;
+
     char code_filename[assm_name_len + 6];
 
     MakeCodeFileName(assm_filename, code_filename);
