@@ -1,1 +1,0 @@
-/usr/bin/c++ -rdynamic CMakeFiles/asm.dir/asm.v2/asm_func.cpp.o CMakeFiles/asm.dir/asm.v2/assembler.cpp.o -o ../bin/asm 
